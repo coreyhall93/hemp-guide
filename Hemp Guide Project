@@ -1,0 +1,63 @@
+## What It Is
+
+An interactive single-page React app called "Hemp Gummies, Explained." It walks users through hemp-derived compounds (THC, CBD, CBN, CBG, etc.), dosing, product types, safety, legality, and includes an interactive gummy builder. Educational tone, not promotional.
+
+## Repo
+
+- GitHub: `coreyhall93/hemp-guide`
+- Local: `~/hemp-guide`
+- Live site: https://coreyhall93.github.io/hemp-guide/
+
+## Tech Stack
+
+- React 19 (single-component app)
+- Vite 7 for build tooling
+- Deployed to GitHub Pages via the `gh-pages` npm package
+- No router, no CSS files, no external component libraries
+- All styling is inline JS objects within the component
+- Fonts: Geist and Geist Mono loaded from Google Fonts at runtime
+
+## File Structure
+
+```
+~/hemp-guide/
+├── index.html          # Minimal shell, resets, mounts #root
+├── vite.config.js      # base: '/hemp-guide/' for GitHub Pages
+├── package.json        # Vite + React + gh-pages
+├── src/
+│   ├── App.jsx         # The entire app (~430 lines, single component)
+│   └── main.jsx        # Renders <App /> into #root
+├── public/
+│   └── vite.svg
+└── .gitignore
+```
+
+## Key Details
+
+- Everything lives in `src/App.jsx`. There are no other components, no separate CSS, no state management libraries. It's one file.
+- The app uses `useState` and `useRef` from React. No other hooks or libraries.
+- Sections are defined in a `SECS` array at the top of the file. Compound data lives in a `CMP` array. All content is hardcoded in the component.
+- Inline styles use two font constants: `G` (Geist) and `GM` (Geist Mono), plus hex colors throughout.
+
+## Deploying Changes
+
+From `~/hemp-guide`:
+
+```bash
+npm run deploy
+```
+
+This runs `vite build` first (via the `predeploy` script), then pushes the `dist/` output to the `gh-pages` branch. The site updates within a minute or two.
+
+Commit source changes to main separately:
+
+```bash
+git add -A
+git commit -m "description of changes"
+git push origin main
+```
+
+## Important
+
+- The `base` in `vite.config.js` must stay as `/hemp-guide/` or all assets will 404 on GitHub Pages.
+- The Google Fonts `<link>` tag is injected by the React component at runtime, not in `index.html`. If fonts break, add the link directly to `index.html`'s `<head>`.
