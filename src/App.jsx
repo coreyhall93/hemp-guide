@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 /* ─── FONTS ─── */
 const G = "'Geist', sans-serif";
@@ -139,7 +139,7 @@ export default function App() {
   const [q, setQ] = useState("");
   const [nav, setNav] = useState(false);
   const ref = useRef(null);
-  const go = id => { setSec(id); setNav(false); setQ(""); setOc(null); setOq(null); setTimeout(()=>ref.current?.scrollTo({top:0,behavior:"smooth"}),50); };
+  const go = id => { setSec(id); setQ(""); setOc(null); setOq(null); setTimeout(()=>ref.current?.scrollTo({top:0,behavior:"smooth"}),50); };
   const tog = id => setSel(p => p.includes(id)?p.filter(x=>x!==id):[...p,id]);
 
   const blend = {};
@@ -401,31 +401,39 @@ export default function App() {
     default: return null;
   }};
 
+  const sideW = 220;
+
   return <div style={{minHeight:"100vh",background:"#FFFFFF",fontFamily:G,display:"flex",flexDirection:"column"}}>
     <link href={LINK} rel="stylesheet"/>
 
     {/* Top bar */}
-    <div style={{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,.85)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderBottom:".5px solid rgba(0,0,0,.08)",padding:"10px 16px",display:"flex",alignItems:"center",gap:12}}>
-      <button onClick={()=>setNav(!nav)} style={{background:"none",border:"none",fontSize:18,cursor:"pointer",padding:2,color:"#3B82F6",fontFamily:G}}>{"\u2630"}</button>
-      <div style={{flex:1}}><div style={{...S.h3,fontSize:15}}>Hemp Gummies, Explained</div></div>
-      {sec!=="home"&&<button onClick={()=>go("home")} style={{background:"none",border:"none",fontFamily:G,fontSize:13,fontWeight:600,color:"#3B82F6",cursor:"pointer"}}>Home</button>}
+    <div style={{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,.88)",backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",borderBottom:"1px solid rgba(0,0,0,.06)",padding:"0 20px",height:48,display:"flex",alignItems:"center",gap:14}}>
+      <button onClick={()=>setNav(!nav)} aria-label="Toggle sidebar" style={{background:"none",border:"none",fontSize:18,cursor:"pointer",padding:4,color:nav?"#09090B":"#71717A",transition:"color .2s",fontFamily:G,display:"flex",alignItems:"center",justifyContent:"center",width:28,height:28,borderRadius:6}}>{nav?"\u2715":"\u2630"}</button>
+      <div style={{height:16,width:1,background:"#E4E4E7"}}/>
+      <div onClick={()=>go("home")} style={{cursor:"pointer",display:"flex",alignItems:"center",gap:8,flex:1}}>
+        <span style={{fontSize:16}}>🌿</span>
+        <span style={{...S.h3,fontSize:14,letterSpacing:"-.01em"}}>Hemp Gummies, Explained</span>
+      </div>
+      {sec!=="home"&&<span style={{...S.mono,fontSize:10,color:"#A1A1AA",textTransform:"uppercase",letterSpacing:".05em"}}>{SECS.find(s=>s.id===sec)?.l}</span>}
     </div>
 
-    {/* Nav drawer */}
-    {nav&&<div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:200,display:"flex"}}>
-      <div style={{width:270,background:"rgba(255,255,255,.97)",backdropFilter:"blur(30px)",WebkitBackdropFilter:"blur(30px)",padding:"60px 0 20px",boxShadow:"4px 0 30px rgba(0,0,0,.06)"}}>
-        <div style={{padding:"0 24px 20px"}}><div style={{...S.h2}}>Sections</div></div>
-        {SECS.map(s=><div key={s.id} onClick={()=>go(s.id)} style={{padding:"11px 24px",cursor:"pointer",background:sec===s.id?"#EFF6FF":"transparent",borderLeft:sec===s.id?"3px solid #3B82F6":"3px solid transparent",...S.body,fontSize:15,color:sec===s.id?"#3B82F6":"#3F3F46",fontWeight:sec===s.id?600:400,transition:"all .15s"}}>{s.l}</div>)}
+    {/* Layout: sidebar + content */}
+    <div style={{display:"flex",flex:1,minHeight:0}}>
+
+      {/* Persistent sidebar */}
+      <div style={{width:nav?sideW:0,overflow:"hidden",transition:"width .28s cubic-bezier(.4,0,.2,1)",flexShrink:0,borderRight:nav?"1px solid rgba(0,0,0,.06)":"none",background:"#FAFAFA"}}>
+        <div style={{width:sideW,padding:"20px 0 24px",height:"100%",boxSizing:"border-box",overflowY:"auto"}}>
+          <div style={{padding:"0 16px 16px"}}><span style={{...S.mono,fontSize:10,color:"#A1A1AA",textTransform:"uppercase",letterSpacing:".06em"}}>Sections</span></div>
+          {SECS.map(s=>{const active=sec===s.id; return <div key={s.id} onClick={()=>{setSec(s.id);setQ("");setOc(null);setOq(null);setTimeout(()=>ref.current?.scrollTo({top:0,behavior:"smooth"}),50);}} style={{padding:"9px 16px 9px 20px",cursor:"pointer",display:"flex",alignItems:"center",gap:10,background:active?"#fff":"transparent",borderRight:active?"2px solid #09090B":"2px solid transparent",transition:"all .18s ease",marginBottom:1}}>
+            <span style={{...S.body,fontSize:14,color:active?"#09090B":"#71717A",fontWeight:active?600:400,transition:"all .18s"}}>{s.l}</span>
+          </div>;})}
+        </div>
       </div>
-      <div onClick={()=>setNav(false)} style={{flex:1,background:"rgba(0,0,0,.12)",cursor:"pointer"}}/>
-    </div>}
 
-    {/* Content */}
-    <div ref={ref} style={{flex:1,maxWidth:540,margin:"0 auto",width:"100%",padding:"24px 18px 100px"}}>{R()}</div>
-
-    {/* Bottom nav */}
-    <div style={{position:"sticky",bottom:0,background:"rgba(255,255,255,.88)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderTop:".5px solid rgba(0,0,0,.08)",padding:"6px 6px 8px",display:"flex",justifyContent:"center",gap:1,flexWrap:"wrap"}}>
-      {SECS.map(s=><button key={s.id} onClick={()=>go(s.id)} style={{background:sec===s.id?"#09090B":"transparent",color:sec===s.id?"#fff":"#A1A1AA",border:"none",borderRadius:8,padding:"5px 9px",fontFamily:GM,fontSize:11,fontWeight:600,cursor:"pointer",transition:"all .15s",letterSpacing:".01em"}}>{s.l}</button>)}
+      {/* Content */}
+      <div style={{flex:1,minWidth:0,display:"flex",justifyContent:"center"}}>
+        <div ref={ref} style={{flex:1,maxWidth:540,width:"100%",padding:"28px 20px 60px",overflowY:"auto"}}>{R()}</div>
+      </div>
     </div>
   </div>;
 }
