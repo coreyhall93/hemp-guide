@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 
 /* ─── FONTS ─── */
 const G = "'Geist', sans-serif";
@@ -131,6 +131,12 @@ const PRESETS = [
 ];
 
 /* ─── APP ─── */
+const MOBILE_BP = 768;
+const SIDE_W_MOBILE = 280;
+const EDGE_ZONE = 24;
+const SWIPE_THRESHOLD = 0.35;
+const SPRING = "cubic-bezier(.32,.72,0,1)";
+
 export default function App() {
   const [sec, setSec] = useState("home");
   const [oc, setOc] = useState(null);
@@ -138,8 +144,116 @@ export default function App() {
   const [sel, setSel] = useState([]);
   const [q, setQ] = useState("");
   const [nav, setNav] = useState(false);
+  const [mob, setMob] = useState(typeof window!=="undefined"&&window.innerWidth<MOBILE_BP);
+  const [swipeX, setSwipeX] = useState(null); // null = no active gesture, 0-1 = progress
   const ref = useRef(null);
-  const go = id => { setSec(id); setQ(""); setOc(null); setOq(null); setTimeout(()=>ref.current?.scrollTo({top:0,behavior:"smooth"}),50); };
+
+  // Touch gesture refs (no re-renders during drag)
+  const touchRef = useRef({startX:0,startY:0,startT:0,tracking:false,fromEdge:false,wasOpen:false,lastX:0,lastT:0,vx:0});
+
+  // Responsive breakpoint
+  useEffect(()=>{
+    const mq = window.matchMedia(`(max-width:${MOBILE_BP-1}px)`);
+    const h = e => { setMob(e.matches); if(!e.matches) setSwipeX(null); };
+    mq.addEventListener("change",h);
+    return ()=>mq.removeEventListener("change",h);
+  },[]);
+
+  // Touch gesture handler
+  useEffect(()=>{
+    if(!mob) return;
+    const t = touchRef.current;
+    const sW = SIDE_W_MOBILE;
+
+    const onStart = e => {
+      const touch = e.touches[0];
+      t.startX = touch.clientX;
+      t.startY = touch.clientY;
+      t.startT = Date.now();
+      t.lastX = touch.clientX;
+      t.lastT = t.startT;
+      t.vx = 0;
+      t.tracking = false;
+      t.fromEdge = touch.clientX < EDGE_ZONE && !nav;
+      t.wasOpen = nav;
+    };
+
+    const onMove = e => {
+      const touch = e.touches[0];
+      const dx = touch.clientX - t.startX;
+      const dy = touch.clientY - t.startY;
+
+      // Decide if we're tracking horizontally
+      if(!t.tracking) {
+        if(Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+        // Only track if: edge swipe to open, or horizontal swipe-left to close when open
+        const horizontal = Math.abs(dx) > Math.abs(dy) * 1.2;
+        if(!horizontal) { t.fromEdge = false; return; }
+        if(t.fromEdge && dx > 0) { t.tracking = true; }
+        else if(t.wasOpen && dx < 0) { t.tracking = true; }
+        else return;
+      }
+
+      // Calculate velocity
+      const now = Date.now();
+      const dt = now - t.lastT;
+      if(dt > 0) { t.vx = (touch.clientX - t.lastX) / dt; }
+      t.lastX = touch.clientX;
+      t.lastT = now;
+
+      // Calculate progress 0-1
+      let progress;
+      if(t.wasOpen) {
+        progress = Math.max(0, Math.min(1, 1 + dx / sW));
+      } else {
+        progress = Math.max(0, Math.min(1, dx / sW));
+      }
+      setSwipeX(progress);
+      e.preventDefault();
+    };
+
+    const onEnd = () => {
+      if(!t.tracking) { t.fromEdge = false; return; }
+      t.tracking = false;
+      t.fromEdge = false;
+
+      // Use velocity + position to decide
+      const progress = swipeXRef.current;
+      if(progress === null) return;
+
+      const flick = Math.abs(t.vx) > 0.4;
+      let shouldOpen;
+      if(flick) {
+        shouldOpen = t.vx > 0;
+      } else {
+        shouldOpen = progress > SWIPE_THRESHOLD;
+      }
+
+      setNav(shouldOpen);
+      setSwipeX(null);
+    };
+
+    document.addEventListener("touchstart", onStart, {passive:true});
+    document.addEventListener("touchmove", onMove, {passive:false});
+    document.addEventListener("touchend", onEnd, {passive:true});
+    document.addEventListener("touchcancel", onEnd, {passive:true});
+    return ()=>{
+      document.removeEventListener("touchstart", onStart);
+      document.removeEventListener("touchmove", onMove);
+      document.removeEventListener("touchend", onEnd);
+      document.removeEventListener("touchcancel", onEnd);
+    };
+  },[mob, nav]);
+
+  // Keep a ref of swipeX for the end handler
+  const swipeXRef = useRef(swipeX);
+  useEffect(()=>{ swipeXRef.current = swipeX; },[swipeX]);
+
+  const go = useCallback(id => {
+    setSec(id); setQ(""); setOc(null); setOq(null);
+    if(mob) setNav(false);
+    setTimeout(()=>ref.current?.scrollTo({top:0,behavior:"smooth"}),50);
+  },[mob]);
   const tog = id => setSel(p => p.includes(id)?p.filter(x=>x!==id):[...p,id]);
 
   const blend = {};
@@ -152,6 +266,10 @@ export default function App() {
   const anyD=sel.some(id=>CMP.find(c=>c.id===id).dt);
   const fF=q?FAQS.filter(f=>f.q.toLowerCase().includes(q.toLowerCase())||f.a.toLowerCase().includes(q.toLowerCase())):FAQS;
   const fG=q?GLOS.filter(g=>g.t.toLowerCase().includes(q.toLowerCase())||g.d.toLowerCase().includes(q.toLowerCase())):GLOS;
+
+  // Sidebar visual progress: gesture overrides state
+  const sideProgress = swipeX !== null ? swipeX : (nav ? 1 : 0);
+  const isAnimating = swipeX === null; // spring animate when not gesturing
 
   const S = { // style tokens
     hero:{fontFamily:G,fontSize:36,fontWeight:800,letterSpacing:"-.03em",lineHeight:1.08,color:"#09090B"},
@@ -401,39 +519,82 @@ export default function App() {
     default: return null;
   }};
 
-  const sideW = 220;
+  const sideW = mob ? SIDE_W_MOBILE : 220;
 
-  return <div style={{minHeight:"100vh",background:"#FFFFFF",fontFamily:G,display:"flex",flexDirection:"column"}}>
+  // Sidebar content (shared between mobile and desktop)
+  const sidebarContent = <div style={{width:sideW,padding:"20px 0 24px",height:"100%",boxSizing:"border-box",overflowY:"auto"}}>
+    <div style={{padding:"0 16px 16px"}}><span style={{...S.mono,fontSize:10,color:"#A1A1AA",textTransform:"uppercase",letterSpacing:".06em"}}>Sections</span></div>
+    {SECS.map(s=>{const active=sec===s.id; return <div key={s.id} onClick={()=>go(s.id)} style={{padding:"9px 16px 9px 20px",cursor:"pointer",display:"flex",alignItems:"center",gap:10,background:active?"#fff":"transparent",borderRight:active?"2px solid #09090B":"2px solid transparent",transition:"all .18s ease",marginBottom:1}}>
+      <span style={{...S.body,fontSize:14,color:active?"#09090B":"#71717A",fontWeight:active?600:400,transition:"all .18s"}}>{s.l}</span>
+    </div>;})}
+  </div>;
+
+  return <div style={{minHeight:"100vh",background:"#FFFFFF",fontFamily:G,display:"flex",flexDirection:"column",overflow:mob?"hidden":"visible",height:mob?"100vh":"auto"}}>
     <link href={LINK} rel="stylesheet"/>
 
     {/* Top bar */}
-    <div style={{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,.88)",backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",borderBottom:"1px solid rgba(0,0,0,.06)",padding:"0 20px",height:48,display:"flex",alignItems:"center",gap:14}}>
-      <button onClick={()=>setNav(!nav)} aria-label="Toggle sidebar" style={{background:"none",border:"none",fontSize:18,cursor:"pointer",padding:4,color:nav?"#09090B":"#71717A",transition:"color .2s",fontFamily:G,display:"flex",alignItems:"center",justifyContent:"center",width:28,height:28,borderRadius:6}}>{nav?"\u2715":"\u2630"}</button>
+    <div style={{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,.88)",backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",borderBottom:"1px solid rgba(0,0,0,.06)",padding:"0 20px",height:48,display:"flex",alignItems:"center",gap:14,flexShrink:0}}>
+      <button onClick={()=>{setNav(!nav);setSwipeX(null);}} aria-label="Toggle sidebar" style={{background:"none",border:"none",fontSize:18,cursor:"pointer",padding:4,color:nav?"#09090B":"#71717A",transition:"color .2s",fontFamily:G,display:"flex",alignItems:"center",justifyContent:"center",width:28,height:28,borderRadius:6}}>{nav?"\u2715":"\u2630"}</button>
       <div style={{height:16,width:1,background:"#E4E4E7"}}/>
       <div onClick={()=>go("home")} style={{cursor:"pointer",display:"flex",alignItems:"center",gap:8,flex:1}}>
-        <span style={{fontSize:16}}>🌿</span>
+        <span style={{fontSize:16}}>{"\u{1F33F}"}</span>
         <span style={{...S.h3,fontSize:14,letterSpacing:"-.01em"}}>Hemp Gummies, Explained</span>
       </div>
       {sec!=="home"&&<span style={{...S.mono,fontSize:10,color:"#A1A1AA",textTransform:"uppercase",letterSpacing:".05em"}}>{SECS.find(s=>s.id===sec)?.l}</span>}
     </div>
 
-    {/* Layout: sidebar + content */}
-    <div style={{display:"flex",flex:1,minHeight:0}}>
+    {/* Layout */}
+    <div style={{display:"flex",flex:1,minHeight:0,position:"relative",overflow:"hidden"}}>
 
-      {/* Persistent sidebar */}
-      <div style={{width:nav?sideW:0,overflow:"hidden",transition:"width .28s cubic-bezier(.4,0,.2,1)",flexShrink:0,borderRight:nav?"1px solid rgba(0,0,0,.06)":"none",background:"#FAFAFA"}}>
-        <div style={{width:sideW,padding:"20px 0 24px",height:"100%",boxSizing:"border-box",overflowY:"auto"}}>
-          <div style={{padding:"0 16px 16px"}}><span style={{...S.mono,fontSize:10,color:"#A1A1AA",textTransform:"uppercase",letterSpacing:".06em"}}>Sections</span></div>
-          {SECS.map(s=>{const active=sec===s.id; return <div key={s.id} onClick={()=>{setSec(s.id);setQ("");setOc(null);setOq(null);setTimeout(()=>ref.current?.scrollTo({top:0,behavior:"smooth"}),50);}} style={{padding:"9px 16px 9px 20px",cursor:"pointer",display:"flex",alignItems:"center",gap:10,background:active?"#fff":"transparent",borderRight:active?"2px solid #09090B":"2px solid transparent",transition:"all .18s ease",marginBottom:1}}>
-            <span style={{...S.body,fontSize:14,color:active?"#09090B":"#71717A",fontWeight:active?600:400,transition:"all .18s"}}>{s.l}</span>
-          </div>;})}
+      {mob ? <>
+        {/* ── MOBILE: overlay sidebar with gesture ── */}
+
+        {/* Backdrop */}
+        {(sideProgress > 0) && <div
+          onClick={()=>{setNav(false);setSwipeX(null);}}
+          style={{
+            position:"absolute",inset:0,zIndex:50,
+            background:`rgba(0,0,0,${sideProgress * 0.4})`,
+            transition:isAnimating?`background .38s ${SPRING}`:"none",
+            willChange:"background",
+          }}
+        />}
+
+        {/* Sidebar drawer */}
+        <div style={{
+          position:"absolute",top:0,bottom:0,left:0,zIndex:60,
+          width:sideW,
+          transform:`translate3d(${(sideProgress - 1) * sideW}px,0,0)`,
+          transition:isAnimating?`transform .38s ${SPRING}`:"none",
+          background:"#FAFAFA",
+          boxShadow:sideProgress > 0 ? `4px 0 24px rgba(0,0,0,${sideProgress * 0.08})` : "none",
+          willChange:"transform",
+          borderRight:"1px solid rgba(0,0,0,.06)",
+        }}>
+          {sidebarContent}
         </div>
-      </div>
 
-      {/* Content */}
-      <div style={{flex:1,minWidth:0,display:"flex",justifyContent:"center"}}>
-        <div ref={ref} style={{flex:1,maxWidth:540,width:"100%",padding:"28px 20px 60px",overflowY:"auto"}}>{R()}</div>
-      </div>
+        {/* Content with subtle scale/translate */}
+        <div style={{
+          flex:1,minWidth:0,display:"flex",justifyContent:"center",
+          transform:`translate3d(${sideProgress * sideW * 0.15}px,0,0) scale(${1 - sideProgress * 0.03})`,
+          transition:isAnimating?`transform .38s ${SPRING}`:"none",
+          transformOrigin:"left center",
+          willChange:"transform",
+          borderRadius:sideProgress > 0 ? 12 : 0,
+          overflow:"hidden",
+        }}>
+          <div ref={ref} style={{flex:1,maxWidth:540,width:"100%",padding:"28px 20px 60px",overflowY:"auto"}}>{R()}</div>
+        </div>
+      </> : <>
+        {/* ── DESKTOP: push sidebar ── */}
+        <div style={{width:nav?sideW:0,overflow:"hidden",transition:"width .28s cubic-bezier(.4,0,.2,1)",flexShrink:0,borderRight:nav?"1px solid rgba(0,0,0,.06)":"none",background:"#FAFAFA"}}>
+          {sidebarContent}
+        </div>
+        <div style={{flex:1,minWidth:0,display:"flex",justifyContent:"center"}}>
+          <div ref={ref} style={{flex:1,maxWidth:540,width:"100%",padding:"28px 20px 60px",overflowY:"auto"}}>{R()}</div>
+        </div>
+      </>}
     </div>
   </div>;
 }
