@@ -391,8 +391,53 @@ const PBar = ({ v, col }) => {
     </div>
   );
 };
-const ProductCard = ({ p, isOpen, onToggle, showHalf, setShowHalf }) => {
-  const fx = (showHalf && p.fxHalf) ? p.fxHalf : p.fx;
+const scaleFx = (p, dose) => {
+  if (dose === 0.5 && p.fxHalf) return p.fxHalf;
+  if (dose === 1) return p.fx;
+  const result = {};
+  FX_KEYS.forEach(k => {
+    const v = p.fx[k] || 0;
+    if (v === 0) { result[k] = 0; return; }
+    const isNeg = k === "fog" || v < 0;
+    const factor = dose < 1
+      ? (isNeg ? dose : Math.pow(dose, 0.6))
+      : (isNeg ? Math.pow(dose, 0.85) : Math.pow(dose, 0.5));
+    result[k] = Math.sign(v) * Math.min(5, Math.round(Math.abs(v) * factor));
+  });
+  return result;
+};
+const doseWarnings = (p, dose) => {
+  const sumMg = (abbrs) => dose * p.compounds.filter(c => abbrs.includes(c.abbr)).reduce((s, c) => s + (typeof c.mg === "number" ? c.mg : 0), 0);
+  const totalThc = sumMg(["THC", "D8-THC", "HHC"]);
+  const totalCbd = sumMg(["CBD"]);
+  const w = [];
+  if (totalThc >= 10 && dose > 1) w.push(`${totalThc}mg THC total \u2014 above your comfortable range.`);
+  else if (totalThc >= 15) w.push(`${totalThc}mg THC \u2014 well beyond your tested tolerance.`);
+  if (totalCbd >= 30 && dose > 1) w.push(`${totalCbd}mg CBD \u2014 increases bupropion/sertraline interaction risk.`);
+  if (dose >= 3) w.push("Not recommended at your tolerance level.");
+  return w;
+};
+const durationExtra = (dose) => dose <= 1 ? null : dose <= 1.5 ? "+30-60 min" : dose <= 2 ? "+1-2 hrs" : "+2-3 hrs";
+const DosePicker = ({ dose, setDose, color, hasHalfDose, compact }) => (
+  <div style={{ display:"flex", gap:compact?3:4, flexWrap:compact?"wrap":"nowrap", justifyContent:compact?"center":"flex-start" }}>
+    {[0.5, 1, 1.5, 2, 3].map(d => (
+      <button key={d} onClick={(e) => { e.stopPropagation(); setDose(d); }} style={{
+        padding: compact ? "3px 7px" : "5px 10px", borderRadius: compact ? 4 : 6, border: "1px solid #e5e7eb", cursor: "pointer",
+        fontFamily: GM, fontSize: compact ? 9 : 11, fontWeight: 600,
+        background: d === dose ? (d >= 2 ? "#991b1b" : color) : "#fff",
+        color: d === dose ? "#fff" : (d >= 2 ? "#991b1b" : "#525252"),
+        borderColor: d >= 2 ? "#fecaca" : "#e5e7eb",
+      }}>{d === 0.5 ? "\u00BD" : d === 1.5 ? "1\u00BD" : d}{d === 0.5 && hasHalfDose ? "*" : ""}</button>
+    ))}
+  </div>
+);
+
+const ProductCard = ({ p, isOpen, onToggle, dose, setDose }) => {
+  const fx = scaleFx(p, dose);
+
+  const warnings = doseWarnings(p, dose);
+  const durExtra = durationExtra(dose);
+
   return (
     <div style={{
       background: "#fff", borderRadius: 12, overflow: "hidden",
@@ -421,18 +466,32 @@ const ProductCard = ({ p, isOpen, onToggle, showHalf, setShowHalf }) => {
       </div>
       {isOpen && (
         <div style={{ padding: "0 16px 18px", borderTop: "1px solid #f4f4f5" }}>
-          {p.hasHalfDose && (
-            <div style={{ display: "flex", gap: 8, marginTop: 12, marginBottom: 4 }}>
-              {["Full", "Half (your dose)"].map((label, i) => (
-                <button key={i} onClick={(e) => { e.stopPropagation(); setShowHalf(i === 1); }} style={{
-                  padding: "5px 12px", borderRadius: 6, border: "1px solid #e5e7eb", cursor: "pointer",
-                  fontFamily: GM, fontSize: 10, fontWeight: 600,
-                  background: (i === 1) === showHalf ? p.color : "#fff",
-                  color: (i === 1) === showHalf ? "#fff" : "#525252",
-                }}>{label}</button>
-              ))}
+          {/* Dose selector */}
+          <div style={{ marginTop: 12, marginBottom: 4 }}>
+            <div style={{ fontFamily: GM, fontSize: 9, color: "#737373", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Dose</div>
+            <DosePicker dose={dose} setDose={setDose} color={p.color} hasHalfDose={p.hasHalfDose} />
+            {dose === 0.5 && p.hasHalfDose && <div style={{ fontFamily: GM, fontSize: 9, color: "#737373", marginTop: 4 }}>* Your usual dose</div>}
+          </div>
+
+          {/* Scaled compound totals when not 1 */}
+          {dose !== 1 && (
+            <div style={{ fontFamily: GM, fontSize: 11, color: "#525252", marginTop: 8, padding: "6px 10px", background: dose >= 2 ? "#fef2f2" : "#f0f9ff", borderRadius: 6, border: `1px solid ${dose >= 2 ? "#fecaca" : "#bae6fd"}` }}>
+              <span style={{ fontSize: 9, color: "#737373", textTransform: "uppercase", fontWeight: 700 }}>At {dose === 0.5 ? "\u00BD" : dose === 1.5 ? "1\u00BD" : dose} gummies: </span>
+              {p.compounds.map((c, i) => {
+                const mg = typeof c.mg === "number" ? Math.round(c.mg * dose * 10) / 10 : c.mg;
+                return <span key={i}>{i > 0 && " \u00B7 "}<strong>{typeof mg === "number" ? mg + "mg" : mg}</strong> {c.abbr}</span>;
+              })}
             </div>
           )}
+
+          {/* Warnings */}
+          {warnings.map((w, i) => (
+            <div key={i} style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, padding: 10, marginTop: 8 }}>
+              <div style={{ fontFamily: GM, fontSize: 9, color: "#991b1b", textTransform: "uppercase", fontWeight: 700, marginBottom: 2 }}>{"\u26A0\uFE0F"} Warning</div>
+              <div style={{ fontSize: 12, lineHeight: 1.5, color: "#991b1b" }}>{w}</div>
+            </div>
+          ))}
+
           <div style={{ marginTop: 12 }}>
             {FX_KEYS.map(k => {
               const v = fx[k];
@@ -453,7 +512,7 @@ const ProductCard = ({ p, isOpen, onToggle, showHalf, setShowHalf }) => {
             </div>
             <div style={{ background: "#fafafa", borderRadius: 8, padding: 10 }}>
               <div style={{ fontFamily: GM, fontSize: 9, color: "#737373", textTransform: "uppercase", marginBottom: 3 }}>Duration</div>
-              <div style={{ fontFamily: GM, fontSize: 12, fontWeight: 700, color: "#161616" }}>{p.duration}</div>
+              <div style={{ fontFamily: GM, fontSize: 12, fontWeight: 700, color: "#161616" }}>{p.duration}{durExtra && <span style={{ color: "#ef4444", fontWeight: 700 }}> {durExtra}</span>}</div>
             </div>
           </div>
           {p.price && (
@@ -531,9 +590,11 @@ export default function App() {
   const [mob, setMob] = useState(typeof window!=="undefined"&&window.innerWidth<MOBILE_BP);
   const [swipeX, setSwipeX] = useState(null); // null = no active gesture, 0-1 = progress
   const [openId, setOpenId] = useState(null);
-  const [halfStates, setHalfStates] = useState({});
+  const [doseStates, setDoseStates] = useState({});
   const [prodFilter, setProdFilter] = useState("all");
   const [prodTab, setProdTab] = useState("gummies");
+  const [cmpSlots, setCmpSlots] = useState([null, null, null]);
+  const [cmpDoses, setCmpDoses] = useState([1, 1, 1]);
   const ref = useRef(null);
 
   // Touch gesture refs (no re-renders during drag)
@@ -840,7 +901,7 @@ export default function App() {
         <Pill bg="#f0f0f0" c="#525252" style={{fontSize:9,fontWeight:700,textTransform:"uppercase"}}>Cetirizine</Pill>
       </div>
       <div style={{ display: "flex", gap: 4, background: "#f0f0f0", borderRadius: 10, padding: 3, marginBottom: 16 }}>
-        {[{ id: "gummies", label: "Gummies" }, { id: "tinctures", label: "Tinctures" }, { id: "quickpick", label: "Quick Pick" }].map(t => (
+        {[{ id: "gummies", label: "Gummies" }, { id: "tinctures", label: "Tinctures" }, { id: "quickpick", label: "Picks" }, { id: "compare", label: "vs" }, { id: "grid", label: "Grid" }].map(t => (
           <button key={t.id} onClick={() => setProdTab(t.id)} style={{
             flex: 1, padding: "8px 0", borderRadius: 8, border: "none",
             background: prodTab === t.id ? "#fff" : "transparent",
@@ -869,8 +930,8 @@ export default function App() {
             key={p.id} p={p}
             isOpen={openId === p.id}
             onToggle={() => setOpenId(openId === p.id ? null : p.id)}
-            showHalf={halfStates[p.id] ?? true}
-            setShowHalf={(v) => setHalfStates(s => ({...s, [p.id]: v}))}
+            dose={doseStates[p.id] ?? (p.hasHalfDose ? 0.5 : 1)}
+            setDose={(v) => setDoseStates(s => ({...s, [p.id]: v}))}
           />
         ))}
       </>)}
@@ -951,6 +1012,205 @@ export default function App() {
           </div>
         </div>
       </>)}
+      {prodTab === "compare" && (() => {
+        const slots = cmpSlots.map((id, idx) => {
+          const p = id ? PRODUCTS.find(x => x.id === id) : null;
+          const d = p ? cmpDoses[idx] : 1;
+          return { id, p, d, fx: p ? scaleFx(p, d) : null, w: p ? doseWarnings(p, d) : [], idx };
+        });
+        const active = slots.filter(s => s.p);
+        const usedIds = cmpSlots.filter(Boolean);
+        const allWarns = active.flatMap(s => s.w.map(w => ({ w, p: s.p })));
+        const setSlot = (i, val) => {
+          setCmpSlots(prev => { const n = [...prev]; n[i] = val || null; return n; });
+          const prod = PRODUCTS.find(p => p.id === val);
+          setCmpDoses(prev => { const n = [...prev]; n[i] = prod?.hasHalfDose ? 0.5 : 1; return n; });
+        };
+        const setDose = (i, val) => setCmpDoses(prev => { const n = [...prev]; n[i] = val; return n; });
+        const selSt = { width:"100%", padding:"10px 8px", borderRadius:8, border:"1px solid #e5e7eb", fontFamily:G, fontSize:13, fontWeight:600, background:"#fff", color:"#161616" };
+        return <>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:10, marginBottom:16 }}>
+            {[0,1,2].map(i => (
+              <div key={i}>
+                <div style={{ fontFamily:GM, fontSize:9, color:"#737373", textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>Product {["A","B","C"][i]}</div>
+                <select value={cmpSlots[i]||""} onChange={e => setSlot(i, e.target.value)} style={selSt}>
+                  <option value="">Choose...</option>
+                  {PRODUCTS.filter(p => !usedIds.includes(p.id) || p.id === cmpSlots[i]).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              </div>
+            ))}
+          </div>
+          {active.length >= 2 ? <>
+            <div style={{ display:"grid", gridTemplateColumns:`repeat(${active.length}, 1fr)`, gap:10, marginBottom:14 }}>
+              {active.map(s => (
+                <div key={s.p.id} style={{ background:`${s.p.color}0a`, border:`1.5px solid ${s.p.color}25`, borderRadius:12, padding:12, textAlign:"center" }}>
+                  <div style={{ fontSize:22, marginBottom:4 }}>{s.p.icon}</div>
+                  <div style={{ fontFamily:G, fontSize:12, fontWeight:700, color:"#161616", lineHeight:1.2 }}>{s.p.name}</div>
+                  <div style={{ fontFamily:GM, fontSize:9, color:s.p.color, fontWeight:600, marginTop:2 }}>{s.p.brand}</div>
+                  <div style={{ marginTop:6 }}><MedBadge level={s.p.medFlag}/></div>
+                  <div style={{ marginTop:8, display:"flex", justifyContent:"center" }}>
+                    <DosePicker dose={s.d} setDose={v => setDose(s.idx, v)} color={s.p.color} hasHalfDose={s.p.hasHalfDose} compact />
+                  </div>
+                  {s.d !== 1 && (
+                    <div style={{ fontFamily:GM, fontSize:8, color:"#525252", marginTop:6, padding:"4px 5px", background:"#f4f4f5", borderRadius:4, textAlign:"left" }}>
+                      {s.p.compounds.map((c, ci) => {
+                        const mg = typeof c.mg === "number" ? Math.round(c.mg * s.d * 10) / 10 : c.mg;
+                        return <span key={ci}>{ci > 0 && " \u00B7 "}<strong>{typeof mg === "number" ? mg + "mg" : mg}</strong> {c.abbr}</span>;
+                      })}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            {allWarns.length > 0 && (
+              <div style={{ background:"#fef2f2", border:"1px solid #fecaca", borderRadius:8, padding:10, marginBottom:10 }}>
+                <div style={{ fontFamily:GM, fontSize:9, color:"#991b1b", textTransform:"uppercase", fontWeight:700, marginBottom:4 }}>{"\u26A0\uFE0F"} Warnings</div>
+                {allWarns.map((w, i) => <div key={i} style={{ fontSize:11, lineHeight:1.5, color:"#991b1b" }}><strong>{w.p.name}:</strong> {w.w}</div>)}
+              </div>
+            )}
+            <Card>
+              <div style={{ fontFamily:GM, fontSize:9, color:"#737373", textTransform:"uppercase", letterSpacing:1, marginBottom:10 }}>Effects</div>
+              <div style={{ display:"flex", gap:12, marginBottom:10, justifyContent:"flex-end", flexWrap:"wrap" }}>
+                {active.map(s => <div key={s.p.id} style={{ display:"flex", alignItems:"center", gap:4 }}>
+                  <div style={{ width:8, height:8, borderRadius:2, background:s.p.color }}/>
+                  <span style={{ fontFamily:GM, fontSize:9, color:"#737373" }}>{s.p.name}</span>
+                </div>)}
+              </div>
+              {FX_KEYS.map(k => {
+                const vals = active.map(s => s.fx[k] || 0);
+                if (vals.every(v => v === 0)) return null;
+                const isNeg = k === "fog";
+                return <div key={k} style={{ display:"flex", alignItems:"center", gap:6, marginBottom:6 }}>
+                  <span style={{ fontSize:11, width:16, textAlign:"center" }}>{FX_META[k].i}</span>
+                  <span style={{ fontFamily:G, fontSize:11, color:"#525252", minWidth:70, flex:"0 0 70px" }}>{FX_META[k].l}</span>
+                  <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                    {active.map((s, si) => {
+                      const v = s.fx[k] || 0;
+                      return <div key={s.p.id} style={{ display:"flex", alignItems:"center", gap:0 }}>
+                        {si > 0 && <div style={{ width:1, height:8, background:"#e0e0e0", marginRight:6 }}/>}
+                        <div style={{ display:"flex", gap:2 }}>
+                          {[0,1,2,3,4].map(i => <div key={i} style={{ width:11, height:5, borderRadius:3, background: i < Math.abs(v) ? ((v < 0 || isNeg) ? "#ef4444" : s.p.color) : "#e8e8e8" }}/>)}
+                        </div>
+                      </div>;
+                    })}
+                  </div>
+                </div>;
+              })}
+            </Card>
+            <Card>
+              <div style={{ fontFamily:GM, fontSize:9, color:"#737373", textTransform:"uppercase", letterSpacing:1, marginBottom:10 }}>Details</div>
+              {[
+                { l:"Onset", fn: s => s.p.onset },
+                { l:"Duration", fn: s => s.p.duration + (durationExtra(s.d) ? " " + durationExtra(s.d) : "") },
+                { l:"Price", fn: s => s.p.price.unit + "/ea" },
+                { l:"Drug Test", fn: s => s.p.drugTestRisk },
+              ].map((r, i) => <div key={i} style={{ display:"grid", gridTemplateColumns:`72px repeat(${active.length}, 1fr)`, gap:8, padding:"7px 0", borderBottom: i < 3 ? "1px solid #f4f4f5" : "none" }}>
+                <div style={{ fontFamily:GM, fontSize:9, color:"#737373", textTransform:"uppercase" }}>{r.l}</div>
+                {active.map(s => <div key={s.p.id} style={{ fontFamily:GM, fontSize:11, color:"#161616", fontWeight:600 }}>{r.fn(s)}</div>)}
+              </div>)}
+            </Card>
+            <Card>
+              <div style={{ fontFamily:GM, fontSize:9, color:"#737373", textTransform:"uppercase", letterSpacing:1, marginBottom:10 }}>Med Interaction</div>
+              <div style={{ display:"grid", gridTemplateColumns:`repeat(${active.length}, 1fr)`, gap:10 }}>
+                {active.map(s => <div key={s.p.id} style={{ background: s.p.medFlag === "high" ? "#fef2f2" : s.p.medFlag === "medium" ? "#fefce8" : "#f0fdf4", borderRadius:8, padding:10 }}>
+                  <div style={{ fontFamily:GM, fontSize:10, color:s.p.color, fontWeight:600, marginBottom:4 }}>{s.p.name}</div>
+                  <div style={{ fontSize:11, lineHeight:1.5, color:"#414141" }}>{s.p.medNote}</div>
+                </div>)}
+              </div>
+            </Card>
+          </> : <Card s={{ background:"#f9f9fa", border:"none", textAlign:"center", padding:"40px 20px" }}>
+            <div style={{ fontSize:32, marginBottom:12 }}>{"\u2696\uFE0F"}</div>
+            <div style={{ fontFamily:G, fontSize:14, color:"#737373" }}>Select at least two products to compare</div>
+          </Card>}
+        </>;
+      })()}
+      {prodTab === "grid" && (() => {
+        const allP = PRODUCTS;
+        const rows = [
+          { type:"header" },
+          { type:"section", l:"Effects" },
+          ...FX_KEYS.map(k=>({ type:"fx", k })),
+          { type:"section", l:"Details" },
+          { type:"row", l:"Onset", fn:p=>p.onset },
+          { type:"row", l:"Duration", fn:p=>p.duration },
+          { type:"row", l:"Price", fn:p=>p.price.unit },
+          { type:"row", l:"Med Risk", fn:p=>p.medFlag },
+          { type:"row", l:"Drug Test", fn:p=>p.drugTestRisk },
+          { type:"row", l:"Psychoactive", fn:p=>p.psychoactive?"Yes":"No" },
+        ];
+        const colW = 72;
+        const labelW = 80;
+        return <>
+          <div style={{ fontFamily:GM, fontSize:9, color:"#737373", textTransform:"uppercase", letterSpacing:1, marginBottom:10 }}>All products at a glance</div>
+          <div style={{ overflowX:"auto", WebkitOverflowScrolling:"touch", marginLeft:-8, marginRight:-8, paddingLeft:8, paddingRight:8, paddingBottom:8 }}>
+            <div style={{ display:"inline-flex", flexDirection:"column", minWidth:"100%" }}>
+              {rows.map((row,ri)=>{
+                if(row.type==="header") return (
+                  <div key="hdr" style={{ display:"flex", position:"sticky", top:0, zIndex:2, background:"#f9f9fa" }}>
+                    <div style={{ width:labelW, flexShrink:0 }}/>
+                    {allP.map(p=>(
+                      <div key={p.id} style={{ width:colW, flexShrink:0, textAlign:"center", padding:"6px 2px" }}>
+                        <div style={{ fontSize:16, marginBottom:2 }}>{p.icon}</div>
+                        <div style={{ fontFamily:GM, fontSize:8, fontWeight:700, color:"#161616", lineHeight:1.2, wordBreak:"break-word" }}>{p.name}</div>
+                        <div style={{ fontFamily:GM, fontSize:7, color:p.color, fontWeight:600 }}>{p.brand==="Society's Plant"?"SP":"Five"}</div>
+                      </div>
+                    ))}
+                  </div>
+                );
+                if(row.type==="section") return (
+                  <div key={row.l} style={{ display:"flex", padding:"8px 0 4px", borderBottom:"1px solid #e8e8e8" }}>
+                    <div style={{ width:labelW, flexShrink:0, fontFamily:GM, fontSize:9, fontWeight:700, color:"#161616", textTransform:"uppercase", letterSpacing:1 }}>{row.l}</div>
+                  </div>
+                );
+                if(row.type==="fx") {
+                  const k = row.k;
+                  const isNeg = k==="fog";
+                  return (
+                    <div key={k} style={{ display:"flex", alignItems:"center", padding:"3px 0", borderBottom:"1px solid #f4f4f5" }}>
+                      <div style={{ width:labelW, flexShrink:0, display:"flex", alignItems:"center", gap:4 }}>
+                        <span style={{ fontSize:10 }}>{FX_META[k].i}</span>
+                        <span style={{ fontFamily:G, fontSize:10, color:"#525252" }}>{FX_META[k].l}</span>
+                      </div>
+                      {allP.map(p=>{
+                        const v = p.fx[k]||0;
+                        return (
+                          <div key={p.id} style={{ width:colW, flexShrink:0, display:"flex", justifyContent:"center", alignItems:"center", padding:"2px 0" }}>
+                            {v===0 ? <span style={{ fontFamily:GM, fontSize:9, color:"#d4d4d4" }}>{"\u2014"}</span> : (
+                              <div style={{ display:"flex", gap:1 }}>
+                                {[0,1,2,3,4].map(i=><div key={i} style={{ width:10, height:4, borderRadius:2, background:i<Math.abs(v)?((v<0||isNeg)?"#ef4444":p.color):"#e8e8e8" }}/>)}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                }
+                if(row.type==="row") {
+                  const medColors = { low:{bg:"#f0fdf4",c:"#166534"}, medium:{bg:"#fefce8",c:"#854d0e"}, high:{bg:"#fef2f2",c:"#991b1b"} };
+                  return (
+                    <div key={row.l} style={{ display:"flex", alignItems:"center", padding:"4px 0", borderBottom:"1px solid #f4f4f5" }}>
+                      <div style={{ width:labelW, flexShrink:0, fontFamily:GM, fontSize:9, color:"#737373", textTransform:"uppercase" }}>{row.l}</div>
+                      {allP.map(p=>{
+                        const val = row.fn(p);
+                        const isMed = row.l==="Med Risk";
+                        const mc = isMed ? medColors[val] : null;
+                        return (
+                          <div key={p.id} style={{ width:colW, flexShrink:0, textAlign:"center", fontFamily:GM, fontSize:9, fontWeight:600, color:mc?mc.c:"#525252", padding:"2px 1px" }}>
+                            {isMed ? <span style={{ background:mc.bg, padding:"1px 5px", borderRadius:4 }}>{val}</span> : val}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                }
+                return null;
+              })}
+            </div>
+          </div>
+          <div style={{ fontFamily:GM, fontSize:9, color:"#b0b0b0", marginTop:8 }}>Scroll horizontally to see all products {"\u2192"}</div>
+        </>;
+      })()}
       <div style={{ textAlign: "center", marginTop: 24, fontSize: 10, color: "#d4d4d4", lineHeight: 1.5 }}>
         Not medical advice. Discuss cannabinoid use with your prescribing doctor.<br />
         Medication interactions are based on published research as of March 2026.<br />
@@ -1047,9 +1307,16 @@ export default function App() {
     </div>;})}
   </div>;
 
-  return <div style={{minHeight:"100vh",background:"#f9f9fa",fontFamily:G,WebkitFontSmoothing:"antialiased",display:"flex",flexDirection:"column",overflow:mob?"hidden":"visible",height:mob?"100vh":"auto"}}>
+  return <div style={{minHeight:"100vh",background:"#f9f9fa",fontFamily:G,WebkitFontSmoothing:"antialiased",WebkitTapHighlightColor:"transparent",WebkitTextSizeAdjust:"100%",overscrollBehavior:"none",display:"flex",flexDirection:"column",overflow:mob?"hidden":"visible",height:mob?"100vh":"auto"}}>
     <link href={LINK_SANS} rel="stylesheet"/>
     <link href={LINK_MONO} rel="stylesheet"/>
+    <style>{`
+      html { scroll-behavior: smooth; }
+      button { transition: transform 150ms ease; -webkit-tap-highlight-color: transparent; }
+      button:active { transform: scale(0.97) !important; }
+      select { transition: border-color 200ms ease; -webkit-tap-highlight-color: transparent; }
+      select:focus { border-color: #161616 !important; outline: none; }
+    `}</style>
 
     {/* Top bar */}
     <div style={{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,.88)",backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",borderBottom:"1px solid rgba(0,0,0,.06)",padding:"0 20px",height:48,display:"flex",alignItems:"center",gap:14,flexShrink:0}}>
@@ -1103,7 +1370,7 @@ export default function App() {
           borderRadius:sideProgress > 0 ? 12 : 0,
           overflow:"hidden",
         }}>
-          <div ref={ref} style={{flex:1,maxWidth:720,width:"100%",padding:"0.5rem 1.5rem 5rem",overflowY:"auto"}}>{R()}</div>
+          <div ref={ref} style={{flex:1,maxWidth:960,width:"100%",padding:"0.5rem 1.5rem 5rem",overflowY:"auto"}}>{R()}</div>
         </div>
       </> : <>
         {/* ── DESKTOP: push sidebar ── */}
@@ -1111,7 +1378,7 @@ export default function App() {
           {sidebarContent}
         </div>
         <div style={{flex:1,minWidth:0,display:"flex",justifyContent:"center"}}>
-          <div ref={ref} style={{flex:1,maxWidth:720,width:"100%",padding:"0.5rem 1.5rem 5rem",overflowY:"auto"}}>{R()}</div>
+          <div ref={ref} style={{flex:1,maxWidth:960,width:"100%",padding:"0.5rem 1.5rem 5rem",overflowY:"auto"}}>{R()}</div>
         </div>
       </>}
     </div>
