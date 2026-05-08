@@ -90,6 +90,7 @@ const PRODUCTS = [
     medNote: "50mg CBD strongly inhibits CYP2B6 (bupropion) and CYP2C19 (sertraline). Highest interaction risk on your shelf.",
     coreyNote: "You've taken this. Dropped shoulders, quiet mind, slightly sluggish speech. No high. Good for physical tension days.",
     tags: ["CBD-dominant", "Non-psychoactive", "Intimacy"],
+    url_path_variant: "/cbd-gummies-for-sex",
   },
   {
     id: "sp-goodday", brand: "Society's Plant", name: "Good Day CBG Focus", cat: "gummy",
@@ -107,6 +108,7 @@ const PRODUCTS = [
     medNote: "40mg CBD inhibits CYP2B6 (bupropion) and CYP2C19 (sertraline). Second highest interaction risk. CBG adds CYP2C9 load (naproxen).",
     coreyNote: "You took this before rehearsal. No high noticed. Felt 'not in my head, not worried about what people think.' Best rehearsal data point so far, but hard to isolate from first-day bupropion effects.",
     tags: ["CBD+CBG", "Non-psychoactive", "Focus", "Lion's Mane"],
+    url_path_variant: "/cbg-gummies",
   },
   {
     id: "sp-highspirits", brand: "Society's Plant", name: "High Spirits Microdose", cat: "gummy",
@@ -124,18 +126,19 @@ const PRODUCTS = [
     medNote: "No CBD, so minimal CYP2B6/2C19 inhibition. THC + sertraline serotonin overlap exists but low risk at 5mg. Cleanest psychoactive option for your med profile.",
     coreyNote: "This is the one you loved at rehearsal. Loose, playful, articulate, present. The clear-headed social gummy. Same as the 'High Energy Microdose' from your sampler.",
     tags: ["CBG+THC+THCv", "Psychoactive", "Social", "Your Favorite"],
+    url_path_variant: "/microdose-gummies",
   },
   {
     id: "sp-focused", brand: "Society's Plant", name: "Focused Microdose", cat: "gummy",
     purpose: "Deep Focus & ADHD Support", icon: "\u{1F3AF}", color: "#6366f1",
     compounds: [
       { abbr: "THC", mg: 2, role: "Micro" },
-      { abbr: "CBG", mg: "?", role: "Support" },
-      { abbr: "THCv", mg: "?", role: "Support" },
-      { abbr: "Lion's Mane", mg: "?", role: "Nootropic" },
-      { abbr: "L-Theanine", mg: "?", role: "Amino Acid" },
+      { abbr: "CBG", mg: 10, role: "Support" },
+      { abbr: "THCv", mg: 2, role: "Support" },
+      { abbr: "Lion's Mane", mg: 200, role: "Nootropic" },
+      { abbr: "L-Theanine", mg: 50, role: "Amino Acid" },
     ],
-    totalMg: null, psychoactive: true, drugTestRisk: "Yes (low dose)",
+    totalMg: 14, psychoactive: true, drugTestRisk: "Yes (low dose)",
     price: { unit: "$2.11", pack: "$42.12 (20ct sale)", sub: "$25.27/mo" },
     fx: { euphoria: 1, relaxation: 2, focus: 5, energy: 3, social: 2, clarity: 5, sleep: 0, pain: 1, fog: 0, appetite: -1 },
     onset: "30-60 min", duration: "3-5 hrs",
@@ -143,6 +146,7 @@ const PRODUCTS = [
     medNote: "Only 2mg THC and no CBD. Very low enzyme interaction risk. L-Theanine is generally safe with SSRIs. Lion's Mane has no known CYP conflicts.",
     coreyNote: "You haven't tried this. Given your ADHD screener results, this one is worth exploring. 2mg THC is sub-perceptual for most people. The Lion's Mane and L-Theanine are nootropic ingredients that support focus without cannabinoid load.",
     tags: ["Nootropic", "Ultra-low THC", "Focus", "ADHD-relevant"],
+    url_path_variant: "/focused-microdose-gummies",
   },
   {
     id: "sp-miracle", brand: "Society's Plant", name: "F*cking Miracle", cat: "gummy",
@@ -158,25 +162,27 @@ const PRODUCTS = [
     medNote: "No CBD, no THC. Cleanest option for your med profile. THCv enzyme interactions are understudied but no documented CYP2B6/2C19 issues.",
     coreyNote: "You tried this. Barely noticed anything. Maybe a subtle something around 30 min that faded fast. Not worth the price as a standalone. THCv works better as a team player inside the High Spirits formula.",
     tags: ["Pure THCv", "Energy", "Appetite Suppression"],
+    url_path_variant: "/weight-loss-gummies",
   },
   {
     id: "sp-adult", brand: "Society's Plant", name: "1:1 Adult Gummies", cat: "gummy",
     purpose: "Full High / Recreation", icon: "\u{1F353}", color: "#ef4444",
     compounds: [
-      { abbr: "THC", mg: 12, role: "Primary" },
-      { abbr: "CBD", mg: 12, role: "Primary" },
+      { abbr: "THC", mg: 11, role: "Primary" },
+      { abbr: "CBD", mg: 11, role: "Primary" },
     ],
-    totalMg: 24, psychoactive: true, drugTestRisk: "Yes",
+    totalMg: 22, psychoactive: true, drugTestRisk: "Yes",
     price: { unit: "$2.70", pack: "$54.00 (20ct)", sub: "$32.40/mo" },
     fx: { euphoria: 5, relaxation: 4, focus: 1, energy: 1, social: 3, clarity: 1, sleep: 3, pain: 4, fog: 4, appetite: 3 },
     onset: "30-90 min", duration: "4-6 hrs",
     medFlag: "medium",
-    medNote: "12mg CBD moderately inhibits CYP2B6/2C19. 12mg THC is a real dose. The THC + sertraline serotonin risk is slightly elevated at this level. Not recommended without tolerance.",
-    coreyNote: "You haven't tried this. At 12mg THC, this is more than double your usual dose. Based on your 10mg Surge experience (word scrambling, dizzy, sounding drunk), this would be too much. Even half a gummy (6mg THC) is above your comfortable range.",
+    medNote: "11mg CBD moderately inhibits CYP2B6/2C19. 11mg THC is a real dose. The THC + sertraline serotonin risk is slightly elevated at this level. Not recommended without tolerance.",
+    coreyNote: "You haven't tried this. At 11mg THC, this is more than double your usual dose. Based on your 10mg Surge experience (word scrambling, dizzy, sounding drunk), this would be too much. Even half a gummy (~5.5mg THC) is at the edge of your comfortable range.",
     tags: ["Full Strength", "1:1 Ratio", "High THC"],
+    url_path_variant: "/thc-gummies",
   },
   {
-    id: "sp-hhc", brand: "Society's Plant", name: "HHC & D9 Mood", cat: "gummy",
+    id: "sp-hhc", brand: "Society's Plant", name: "High & Happy HHC Mood", cat: "gummy",
     purpose: "Euphoria & Creativity", icon: "\u{1F308}", color: "#ec4899",
     compounds: [
       { abbr: "HHC", mg: 25, role: "Primary" },
@@ -190,6 +196,7 @@ const PRODUCTS = [
     medNote: "HHC enzyme interactions are poorly studied. 10mg THC adds CYP2B6/2C19 load. Combined 35mg psychoactive cannabinoids is a heavy dose for your tolerance. Use extreme caution.",
     coreyNote: "You haven't tried this. HHC is a hydrogenated cannabinoid that sits between Delta-8 and Delta-9 in strength. At 25mg HHC + 10mg THC, this is the strongest psychoactive gummy in the Society's Plant lineup. Far beyond your tested comfort zone.",
     tags: ["HHC", "Strong", "Euphoria", "Advanced Users"],
+    url_path_variant: "/hhc-mood-gummies",
   },
   {
     id: "sp-rr", brand: "Society's Plant", name: "R&R Delta-8", cat: "gummy",
@@ -205,36 +212,42 @@ const PRODUCTS = [
     medNote: "Delta-8 THC metabolizes through CYP enzymes similarly to Delta-9. At 50mg per gummy, even a quarter would be a significant dose. Drug interaction profile is poorly characterized.",
     coreyNote: "You haven't tried this. Delta-8 is generally considered milder than Delta-9, but at 50mg per gummy this is extremely potent. You'd need to cut this into eighths to approach your usual dose range. Not practical.",
     tags: ["Delta-8", "High Dose", "Sedating"],
+    url_path_variant: "/thc-gummies-1",
   },
   {
     id: "sp-goodnight", brand: "Society's Plant", name: "Good Night CBN Sleep", cat: "gummy",
-    purpose: "Sleep", icon: "\u{1F319}", color: "#1e40af",
+    purpose: "Daily Sleep Support", icon: "\u{1F319}", color: "#1e40af",
     compounds: [
       { abbr: "CBN", mg: "?", role: "Primary" },
+      { abbr: "CBD", mg: "?", role: "Secondary" },
     ],
     totalMg: null, psychoactive: true, drugTestRisk: "Yes",
     price: { unit: "$1.72", pack: "$34.32 (20ct sale)", sub: null },
     fx: { euphoria: 1, relaxation: 5, focus: 0, energy: 0, social: 0, clarity: 0, sleep: 5, pain: 3, fog: 2, appetite: 1 },
     onset: "30-60 min", duration: "4-6 hrs",
-    medFlag: "low",
-    medNote: "CBN inhibits CYP2B6 to some degree but exact dose unknown. Sedation stacks with sertraline drowsiness. Bedtime only.",
-    coreyNote: "You haven't tried this. Similar concept to Five's Indica Chill but without the THC/CBD base. Pure sleep aid. Never before driving or social events.",
-    tags: ["CBN", "Sleep", "Evening Only"],
+    medFlag: "medium",
+    medNote: "CBN inhibits CYP2B6 to some degree. Added CBD inhibits CYP2B6 (bupropion) and CYP2C19 (sertraline). Sedation stacks with sertraline drowsiness. Bedtime only.",
+    coreyNote: "You haven't tried this. Foundational nightly sleep support — CBN paired with CBD for nervous-system regulation. Pure sleep aid. Never before driving or social events.",
+    tags: ["CBN+CBD", "Sleep", "Evening Only"],
+    url_path_variant: "/cbn-gummies",
   },
   {
-    id: "sp-snooze", brand: "Society's Plant", name: "Snoozeberry CBN Sleep", cat: "gummy",
-    purpose: "Sleep (Berry Flavor)", icon: "\u{1F353}\u{1F319}", color: "#4338ca",
+    id: "sp-snooze", brand: "Society's Plant", name: "Snoozeberry Sleep", cat: "gummy",
+    purpose: "Assertive Sleep Aid", icon: "\u{1F353}\u{1F319}", color: "#4338ca",
     compounds: [
       { abbr: "CBN", mg: "?", role: "Primary" },
+      { abbr: "Melatonin", mg: "?", role: "Sleep Hormone" },
+      { abbr: "5-HTP", mg: "?", role: "Serotonin Precursor" },
     ],
     totalMg: null, psychoactive: true, drugTestRisk: "Yes",
     price: { unit: "$1.87", pack: "$37.44 (20ct sale)", sub: null },
-    fx: { euphoria: 1, relaxation: 5, focus: 0, energy: 0, social: 0, clarity: 0, sleep: 5, pain: 3, fog: 2, appetite: 1 },
+    fx: { euphoria: 1, relaxation: 5, focus: 0, energy: 0, social: 0, clarity: 0, sleep: 5, pain: 2, fog: 3, appetite: 1 },
     onset: "30-60 min", duration: "4-6 hrs",
-    medFlag: "low",
-    medNote: "Same profile as Good Night. CBN inhibits CYP2B6 mildly. Sedation stacks with sertraline.",
-    coreyNote: "Same as Good Night but berry flavored. Different flavor, same function.",
-    tags: ["CBN", "Sleep", "Evening Only"],
+    medFlag: "high",
+    medNote: "5-HTP raises serotonin and stacks with sertraline — meaningful serotonin syndrome risk. Avoid combining with your SSRI without physician approval. Melatonin is generally safe but adds sedation. CBN adds mild CYP2B6 load.",
+    coreyNote: "You haven't tried this. Heavier sleep formula for high-stress nights or racing thoughts. Important: the 5-HTP makes this a poor fit for your sertraline — pick Good Night instead unless you've cleared it with a doctor.",
+    tags: ["CBN+Melatonin+5-HTP", "Sleep", "Strong", "SSRI Caution"],
+    url_path_variant: "/cbn-sleep-gummies",
   },
   // === FIVE GUMMIES ===
   {
@@ -294,28 +307,146 @@ const PRODUCTS = [
     tags: ["THC+CBD+CBN", "Sleep", "Evening Only"],
     hasHalfDose: true,
   },
-];
-
-const TINCTURES = [
+  // === CORNBREAD HEMP GUMMIES ===
   {
-    id: "sp-cbda", brand: "Society's Plant", name: "CBDA + CBD Pain Relief", cat: "tincture",
-    purpose: "Pain & Inflammation", icon: "\u{1FA79}", color: "#059669",
-    perMl: "32mg CBD + 12mg CBDA", totalBottle: "1000mg", size: "30ml",
-    price: "$53.04 (sale)", pricePerDose: "~$1.77/ml",
-    medFlag: "high",
-    medNote: "32mg CBD per dose strongly inhibits CYP2B6 (bupropion) and CYP2C19 (sertraline). CBDA interactions less studied but likely similar. Use smaller doses and separate from medication timing.",
-    coreyNote: "You haven't tried this. Relevant for your back pain and EMG soreness. Could be a daily anti-inflammatory option, but the high CBD means bupropion interaction concerns. Start with half a dropper (16mg CBD) and see how it goes.",
-    tags: ["CBDA", "Pain", "Anti-inflammatory"],
+    id: "cb-fs-watermelon", brand: "Cornbread", name: "Full Spectrum CBD (Watermelon)", cat: "gummy",
+    purpose: "Wellness & Recovery", icon: "\u{1F349}", color: "#dc2626",
+    compounds: [
+      { abbr: "CBD", mg: 25, role: "Primary" },
+      { abbr: "THC", mg: 2, role: "Trace" },
+    ],
+    totalMg: 27, psychoactive: false, drugTestRisk: "Yes (trace THC)",
+    price: { unit: null, pack: null, sub: null },
+    fx: { euphoria: 0, relaxation: 4, focus: 1, energy: 0, social: 1, clarity: 2, sleep: 2, pain: 4, fog: 0, appetite: 0 },
+    onset: "30-60 min", duration: "3-5 hrs",
+    medFlag: "medium",
+    medNote: "25mg CBD inhibits CYP2B6 (bupropion) and CYP2C19 (sertraline). Trace THC adds minimal load. Adjustable dose range 20-50mg means risk scales with serving size.",
+    coreyNote: "You haven't tried this. Full-spectrum CBD with a small amount of THC for the entourage effect. Targeted at general wellness, stress, and exercise recovery rather than a high.",
+    tags: ["Full Spectrum CBD", "Wellness", "Recovery"],
+    url_path_variant: "#watermelon",
   },
   {
-    id: "sp-thrive", brand: "Society's Plant", name: "Thrive Mushroom + CBD", cat: "tincture",
-    purpose: "Overall Wellness", icon: "\u{1F33F}", color: "#10b981",
-    perMl: "~33mg CBD + 12 mushroom extracts", totalBottle: "1000mg CBD", size: "30ml",
-    price: "$60.84 (sale)", pricePerDose: "~$2.03/ml",
+    id: "cb-fs-berry", brand: "Cornbread", name: "Full Spectrum CBD (Berry)", cat: "gummy",
+    purpose: "Wellness & Recovery", icon: "\u{1FAD0}", color: "#7e22ce",
+    compounds: [
+      { abbr: "CBD", mg: 25, role: "Primary" },
+      { abbr: "THC", mg: 2, role: "Trace" },
+    ],
+    totalMg: 27, psychoactive: false, drugTestRisk: "Yes (trace THC)",
+    price: { unit: null, pack: null, sub: null },
+    fx: { euphoria: 0, relaxation: 4, focus: 1, energy: 0, social: 1, clarity: 2, sleep: 2, pain: 4, fog: 0, appetite: 0 },
+    onset: "30-60 min", duration: "3-5 hrs",
+    medFlag: "medium",
+    medNote: "Same as Watermelon variant. 25mg CBD inhibits CYP2B6/2C19. Flavor only differs — formula is identical.",
+    coreyNote: "Berry flavor of the same Full Spectrum CBD formula. No functional difference from Watermelon or Peach.",
+    tags: ["Full Spectrum CBD", "Wellness", "Recovery"],
+    url_path_variant: "#berrygummies",
+  },
+  {
+    id: "cb-fs-peach", brand: "Cornbread", name: "Full Spectrum CBD (Peach)", cat: "gummy",
+    purpose: "Wellness & Recovery", icon: "\u{1F351}", color: "#f97316",
+    compounds: [
+      { abbr: "CBD", mg: 25, role: "Primary" },
+      { abbr: "THC", mg: 2, role: "Trace" },
+    ],
+    totalMg: 27, psychoactive: false, drugTestRisk: "Yes (trace THC)",
+    price: { unit: null, pack: null, sub: null },
+    fx: { euphoria: 0, relaxation: 4, focus: 1, energy: 0, social: 1, clarity: 2, sleep: 2, pain: 4, fog: 0, appetite: 0 },
+    onset: "30-60 min", duration: "3-5 hrs",
+    medFlag: "medium",
+    medNote: "Same as Watermelon variant. 25mg CBD inhibits CYP2B6/2C19.",
+    coreyNote: "Peach flavor of the same Full Spectrum CBD formula. Flavor preference only.",
+    tags: ["Full Spectrum CBD", "Wellness", "Recovery"],
+    url_path_variant: "#peach",
+  },
+  {
+    id: "cb-cbd-sleep", brand: "Cornbread", name: "CBD Sleep Gummies", cat: "gummy",
+    purpose: "Sleep (CBD-led)", icon: "\u{1F33F}", color: "#0d9488",
+    compounds: [
+      { abbr: "CBD", mg: 50, role: "Primary" },
+      { abbr: "THC", mg: 2, role: "Trace" },
+      { abbr: "Valerian", mg: "?", role: "Botanical" },
+      { abbr: "Chamomile", mg: "?", role: "Botanical" },
+      { abbr: "Lavender", mg: "?", role: "Botanical" },
+    ],
+    totalMg: null, psychoactive: false, drugTestRisk: "Yes (trace THC)",
+    price: { unit: null, pack: null, sub: null },
+    fx: { euphoria: 0, relaxation: 5, focus: 0, energy: 0, social: 0, clarity: 1, sleep: 4, pain: 3, fog: 1, appetite: 0 },
+    onset: "30-60 min", duration: "4-6 hrs",
     medFlag: "high",
-    medNote: "33mg CBD per dose inhibits CYP2B6/2C19. Mushroom extracts (Lion's Mane, Reishi, etc.) are generally safe with your medications. CBD is the concern, not the mushrooms.",
-    coreyNote: "You haven't tried this. The 12-mushroom blend is interesting from a general wellness standpoint, but the CBD dose creates the same bupropion interaction issue as the gummies.",
-    tags: ["CBD", "Mushrooms", "Wellness"],
+    medNote: "50mg CBD strongly inhibits CYP2B6 (bupropion) and CYP2C19 (sertraline) — top-tier interaction risk. Valerian adds sedation that stacks with sertraline. Bedtime only.",
+    coreyNote: "You haven't tried this. CBD-driven sleep formula with calming botanicals. The 50mg CBD load is the concern; consider half a gummy if you try it.",
+    tags: ["CBD Sleep", "Botanicals", "Evening Only"],
+    url_path_variant: "#sleep",
+  },
+  {
+    id: "cb-thc-blueberry", brand: "Cornbread", name: "THC Gummies (Blueberry Breeze)", cat: "gummy",
+    purpose: "Balanced Relaxation", icon: "\u{1FAD0}", color: "#2563eb",
+    compounds: [
+      { abbr: "THC", mg: 10, role: "Primary" },
+      { abbr: "CBD", mg: 10, role: "Primary" },
+    ],
+    totalMg: 20, psychoactive: true, drugTestRisk: "Yes",
+    price: { unit: null, pack: null, sub: null },
+    fx: { euphoria: 3, relaxation: 4, focus: 1, energy: 1, social: 3, clarity: 2, sleep: 2, pain: 3, fog: 2, appetite: 2 },
+    onset: "30-60 min", duration: "3-5 hrs",
+    medFlag: "medium",
+    medNote: "10mg CBD moderately inhibits CYP2B6/2C19. 10mg THC matches your full-Surge dose, which has historically been too much. Consider half.",
+    coreyNote: "Mellow 1:1 body/mind formula in a blueberry flavor. Comparable in dose to a full Five Surge.",
+    tags: ["THC+CBD", "Balanced", "Relaxation"],
+    url_path_variant: "#thc",
+  },
+  {
+    id: "cb-thc-bloodorange", brand: "Cornbread", name: "THC Gummies (Blood Orange Bliss)", cat: "gummy",
+    purpose: "Balanced Relaxation", icon: "\u{1F34A}", color: "#ea580c",
+    compounds: [
+      { abbr: "THC", mg: 10, role: "Primary" },
+      { abbr: "CBD", mg: 10, role: "Primary" },
+    ],
+    totalMg: 20, psychoactive: true, drugTestRisk: "Yes",
+    price: { unit: null, pack: null, sub: null },
+    fx: { euphoria: 3, relaxation: 4, focus: 1, energy: 1, social: 3, clarity: 2, sleep: 2, pain: 3, fog: 2, appetite: 2 },
+    onset: "30-60 min", duration: "3-5 hrs",
+    medFlag: "medium",
+    medNote: "Same profile as Blueberry Breeze. Flavor differs, formula does not.",
+    coreyNote: "Blood orange flavor of the same 10:10 formula. Pick by taste.",
+    tags: ["THC+CBD", "Balanced", "Relaxation"],
+    url_path_variant: "#thc2",
+  },
+  {
+    id: "cb-thc-cherrylime", brand: "Cornbread", name: "THC Gummies (Cherry Lime Chill)", cat: "gummy",
+    purpose: "Balanced Relaxation", icon: "\u{1F352}", color: "#be123c",
+    compounds: [
+      { abbr: "THC", mg: 10, role: "Primary" },
+      { abbr: "CBD", mg: 10, role: "Primary" },
+    ],
+    totalMg: 20, psychoactive: true, drugTestRisk: "Yes",
+    price: { unit: null, pack: null, sub: null },
+    fx: { euphoria: 3, relaxation: 4, focus: 1, energy: 1, social: 3, clarity: 2, sleep: 2, pain: 3, fog: 2, appetite: 2 },
+    onset: "30-60 min", duration: "3-5 hrs",
+    medFlag: "medium",
+    medNote: "Same profile as the other THC Gummy flavors.",
+    coreyNote: "Cherry lime flavor of the same 10:10 formula. Pick by taste.",
+    tags: ["THC+CBD", "Balanced", "Relaxation"],
+    url_path_variant: "#thc3",
+  },
+  {
+    id: "cb-thc-sleep", brand: "Cornbread", name: "THC Sleep Gummies", cat: "gummy",
+    purpose: "Deep Sleep", icon: "\u{1F319}", color: "#312e81",
+    compounds: [
+      { abbr: "THC", mg: 10, role: "Primary" },
+      { abbr: "CBD", mg: 10, role: "Primary" },
+      { abbr: "Botanicals", mg: "?", role: "Sleep Support" },
+    ],
+    totalMg: 20, psychoactive: true, drugTestRisk: "Yes",
+    price: { unit: null, pack: null, sub: null },
+    fx: { euphoria: 2, relaxation: 5, focus: 0, energy: 0, social: 1, clarity: 0, sleep: 5, pain: 4, fog: 3, appetite: 2 },
+    onset: "30-60 min", duration: "4-6 hrs",
+    medFlag: "medium",
+    medNote: "10mg CBD inhibits CYP2B6/2C19. 10mg THC adds load and sedation that stacks with sertraline. Bedtime only — never before driving or social events.",
+    coreyNote: "You haven't tried this. THC-led sleep formula for extended overnight rest. Heavier than Five Indica Chill in feel because of the sleep botanicals.",
+    tags: ["THC+CBD", "Sleep", "Botanicals", "Evening Only"],
+    url_path_variant: "#thc4",
   },
 ];
 
@@ -557,7 +688,7 @@ const ProductCard = ({ p, isOpen, onToggle, dose, setDose }) => {
 const QUICK_PICKS = [
   { scenario: "Rehearsal (social, need to perform)", best: "Half Five Surge", alt: "Society's Plant High Spirits (if budget allows)", why: "Surge at half dose is your tested baseline. Low med interaction risk, proven social effect. High Spirits gave you the best rehearsal experience but costs 64% more per session.", icon: "\u{1F3AD}" },
   { scenario: "Focus & clarity (work, ADHD days)", best: "Society's Plant Good Day", alt: "Society's Plant Focused Microdose (if you want to try the nootropic stack)", why: "Good Day gave you calm presence without fog. The Focused Microdose adds Lion's Mane and L-Theanine at only 2mg THC, which is interesting given your positive ADHD screener. But Good Day has higher CBD = higher bupropion interaction.", icon: "\u{1F3AF}" },
-  { scenario: "Pain relief (back, EMG soreness)", best: "Society's Plant Passion (last one) or CBDA Tincture", alt: "Half Surge + naproxen (separate timing)", why: "50mg CBD is the strongest anti-inflammatory option. The CBDA tincture at half-dose (16mg CBD) is a lower-interaction alternative. Half Surge provides THC-based pain perception reduction at lower CBD load.", icon: "\u{1FA79}" },
+  { scenario: "Pain relief (back, EMG soreness)", best: "Society's Plant Passion (last one)", alt: "Half Surge + naproxen (separate timing)", why: "50mg CBD is the strongest anti-inflammatory option you have on hand. Half Surge provides THC-based pain perception reduction at lower CBD load and lower medication-interaction risk.", icon: "\u{1FA79}" },
   { scenario: "Sleep / evening wind-down", best: "Five Indica Chill (half)", alt: "Society's Plant Good Night CBN", why: "Half Indica Chill gives you THC relaxation + CBN sedation at low CBD dose, which is better for your med profile than a high-CBD option. Good Night is CBN-only if you want zero THC.", icon: "\u{1F319}" },
   { scenario: "Lowest medication interaction risk", best: "Society's Plant F*cking Miracle", alt: "Society's Plant High Spirits", why: "F*cking Miracle has zero CBD and zero THC. High Spirits has zero CBD and 5mg THC. Both avoid the CYP2B6/2C19 inhibition that matters most for your bupropion and sertraline.", icon: "\u{1F48A}" },
   { scenario: "Best value (cheapest per session)", best: "Half Five Surge ($0.67/session)", alt: "Half Five Hybrid Vibes ($0.67/session)", why: "Five gummies at half dose are the cheapest effective option. Society's Plant runs $1.87-$2.70 per gummy. The Five products are about a third of the cost.", icon: "\u{1F4B0}" },
@@ -720,6 +851,7 @@ export default function App() {
     { id: "all", label: "All Products" },
     { id: "society", label: "Society's Plant" },
     { id: "five", label: "Five" },
+    { id: "cornbread", label: "Cornbread" },
     { id: "social", label: "Social Use" },
     { id: "focus", label: "Focus" },
     { id: "sleep", label: "Sleep" },
@@ -730,6 +862,7 @@ export default function App() {
       if (prodFilter === "all") return true;
       if (prodFilter === "society") return p.brand === "Society's Plant";
       if (prodFilter === "five") return p.brand === "Five";
+      if (prodFilter === "cornbread") return p.brand === "Cornbread";
       if (prodFilter === "social") return p.fx.social >= 3;
       if (prodFilter === "focus") return p.fx.focus >= 4;
       if (prodFilter === "sleep") return p.fx.sleep >= 3;
@@ -901,7 +1034,7 @@ export default function App() {
         <Pill bg="#f0f0f0" c="#525252" style={{fontSize:9,fontWeight:700,textTransform:"uppercase"}}>Cetirizine</Pill>
       </div>
       <div style={{ display: "flex", gap: 4, background: "#f0f0f0", borderRadius: 10, padding: 3, marginBottom: 16 }}>
-        {[{ id: "gummies", label: "Gummies" }, { id: "tinctures", label: "Tinctures" }, { id: "quickpick", label: "Picks" }, { id: "compare", label: "vs" }, { id: "grid", label: "Grid" }].map(t => (
+        {[{ id: "gummies", label: "Gummies" }, { id: "quickpick", label: "Picks" }, { id: "compare", label: "vs" }, { id: "grid", label: "Grid" }].map(t => (
           <button key={t.id} onClick={() => setProdTab(t.id)} style={{
             flex: 1, padding: "8px 0", borderRadius: 8, border: "none",
             background: prodTab === t.id ? "#fff" : "transparent",
@@ -934,53 +1067,6 @@ export default function App() {
             setDose={(v) => setDoseStates(s => ({...s, [p.id]: v}))}
           />
         ))}
-      </>)}
-      {prodTab === "tinctures" && (<>
-        <div style={{ fontFamily: GM, fontSize: 10, color: "#737373", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>
-          Society's Plant Tinctures
-        </div>
-        {TINCTURES.map(t => (
-          <Card key={t.id} s={{padding:18}}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-              <span style={{ fontSize: 24 }}>{t.icon}</span>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: G, fontSize: 16, fontWeight: 700, color: "#161616" }}>{t.name}</div>
-                <div style={{ fontFamily: GM, fontSize: 11, color: t.color, fontWeight: 600 }}>{t.purpose}</div>
-              </div>
-              <MedBadge level={t.medFlag} />
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 10 }}>
-              <div style={{ background: "#fafafa", borderRadius: 8, padding: 10 }}>
-                <div style={{ fontFamily: GM, fontSize: 9, color: "#737373", textTransform: "uppercase", marginBottom: 3 }}>Per 1ml Dose</div>
-                <div style={{ fontFamily: GM, fontSize: 12, fontWeight: 700, color: "#161616" }}>{t.perMl}</div>
-              </div>
-              <div style={{ background: "#fafafa", borderRadius: 8, padding: 10 }}>
-                <div style={{ fontFamily: GM, fontSize: 9, color: "#737373", textTransform: "uppercase", marginBottom: 3 }}>Price</div>
-                <div style={{ fontFamily: GM, fontSize: 12, fontWeight: 700, color: "#161616" }}>{t.price}</div>
-              </div>
-            </div>
-            <div style={{
-              background: t.medFlag === "high" ? "#fef2f2" : "#f0fdf4",
-              border: `1px solid ${t.medFlag === "high" ? "#fecaca" : "#bbf7d0"}`,
-              borderRadius: 8, padding: 10, marginBottom: 8,
-            }}>
-              <div style={{ fontFamily: GM, fontSize: 9, color: t.medFlag === "high" ? "#991b1b" : "#166534", textTransform: "uppercase", fontWeight: 700, marginBottom: 3 }}>
-                {"\u{1F48A}"} Medication Interaction
-              </div>
-              <div style={{ fontSize: 12, lineHeight: 1.6, color: "#414141" }}>{t.medNote}</div>
-            </div>
-            <div style={{ background: `${t.color}08`, border: `1px solid ${t.color}20`, borderRadius: 8, padding: 10 }}>
-              <div style={{ fontFamily: GM, fontSize: 9, color: t.color, textTransform: "uppercase", fontWeight: 700, marginBottom: 3 }}>Notes</div>
-              <div style={{ fontSize: 12, lineHeight: 1.6, color: "#414141" }}>{t.coreyNote}</div>
-            </div>
-            <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 8 }}>
-              {t.tags.map((tag, i) => <Pill key={i} style={{fontSize:9,fontWeight:700,textTransform:"uppercase"}}>{tag}</Pill>)}
-            </div>
-          </Card>
-        ))}
-        <Info>
-          <strong style={{ color: "#525252" }}>Note on mushroom tinctures:</strong> Society's Plant also sells Chill, Dream, and Flow mushroom + CBD tinctures ($57-$61 each). All three contain ~33mg CBD per dose, which creates the same bupropion interaction concern. The mushroom ingredients (Reishi, Lion's Mane, Cordyceps, etc.) are generally safe with your medications. If you're interested in mushroom supplementation, a standalone mushroom product without CBD would avoid the drug interaction issue entirely.
-        </Info>
       </>)}
       {prodTab === "quickpick" && (<>
         <div style={{ fontFamily: GM, fontSize: 10, color: "#737373", marginBottom: 12, textTransform: "uppercase", letterSpacing: 1 }}>
