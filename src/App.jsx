@@ -9,8 +9,61 @@ const LINK_MONO = "https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-mon
 /* ─── SECTIONS ─── */
 const SECS = [
   { id: "home", l: "Home" }, { id: "basics", l: "Basics" }, { id: "compounds", l: "Compounds" },
-  { id: "builder", l: "Builder" }, { id: "products", l: "Products" }, { id: "safety", l: "Safety" },
+  { id: "builder", l: "Builder" }, { id: "finder", l: "Finder" }, { id: "products", l: "Products" }, { id: "safety", l: "Safety" },
   { id: "compare", l: "Comparison" }, { id: "legal", l: "Legal" }, { id: "faq", l: "FAQ" }, { id: "glossary", l: "Glossary" },
+];
+
+const FINDER_GOALS = [
+  { id: "anxiety",  label: "Reduce Anxiety", icon: "\u{1F30A}",  fxBoost: { relaxation: 2, social: 1 }, fxPenalty: { fog: 1 } },
+  { id: "sleep",    label: "Sleep",          icon: "\u{1F319}",  fxBoost: { sleep: 3, relaxation: 1 } },
+  { id: "social",   label: "Social Ease",    icon: "\u{1F4AC}",  fxBoost: { social: 2, euphoria: 1 } },
+  { id: "focus",    label: "Focus & Clarity",icon: "\u{1F3AF}",  fxBoost: { focus: 2, clarity: 2 }, fxPenalty: { fog: 2, sleep: 1 } },
+  { id: "energy",   label: "Energy",         icon: "⚡",     fxBoost: { energy: 2 }, fxPenalty: { sleep: 2 } },
+  { id: "pain",     label: "Pain Relief",    icon: "\u{1FA79}",  fxBoost: { pain: 2 } },
+  { id: "euphoria", label: "Get High",       icon: "✨",     fxBoost: { euphoria: 3 } },
+  { id: "appetite", label: "Curb Appetite",  icon: "\u{1F37D}️", fxBoost: {}, requireAppetiteNeg: true },
+];
+
+const FINDER_MEDS = [
+  { id: "bupropion",     label: "Bupropion (Wellbutrin)" },
+  { id: "sertraline",    label: "Sertraline (Zoloft)" },
+  { id: "ssri_other",    label: "Other SSRI / SNRI" },
+  { id: "wegovy",        label: "Semaglutide (Wegovy / Ozempic)" },
+  { id: "focalin",       label: "Focalin / ADHD stimulant" },
+  { id: "acetaminophen", label: "Acetaminophen (Tylenol)" },
+  { id: "naproxen",      label: "Naproxen / NSAID" },
+  { id: "eliquis",       label: "Eliquis / blood thinner" },
+  { id: "melatonin",     label: "Melatonin (separately)" },
+];
+
+const PSY_LEVELS = [
+  { id: "none",  label: "No high",          desc: "Non-psychoactive only" },
+  { id: "micro", label: "Microdose",        desc: "≤2mg THC equivalent" },
+  { id: "mild",  label: "Mild",             desc: "≤5mg THC equivalent" },
+  { id: "full",  label: "Full",             desc: "Anything goes" },
+  { id: "any",   label: "Doesn't matter",   desc: "Show all" },
+];
+
+const SYNERGIES = {
+  "CBD+CBN":         { label: "CBD + CBN", why: "CBD takes the edge off racing thoughts while CBN deepens sedation. Together they hit anxiety + sleep without needing THC to push you over." },
+  "CBD+THC":         { label: "CBD + THC (1:1)", why: "CBD blunts THC's anxious edge; THC adds the body relaxation CBD lacks alone. The 1:1 keeps the high balanced rather than racy." },
+  "CBD+THCv":        { label: "CBD + THCv", why: "CBD calms, THCv keeps you sharp and curbs appetite. Anxiety relief without sedation or munchies." },
+  "CBG+CBD":         { label: "CBG + CBD", why: "CBG provides clear-headed focus, CBD provides the calm. The pairing for daytime anxiety where you still need to think straight." },
+  "CBN+Melatonin":   { label: "CBN + Melatonin", why: "Melatonin handles sleep onset, CBN handles staying asleep. Heavy formula for nights with racing thoughts." },
+  "THCv+THC":        { label: "THCv + THC", why: "THCv blunts THC's anxiety risk and fog while preserving the social lift. Why High Spirits feels different from a 5mg full-THC gummy." },
+  "LionsMane+THC":   { label: "Lion's Mane + low THC", why: "Lion's Mane supports nerve growth factor over weeks. With low THC, you get a focus benefit beyond the gummy's window." },
+};
+
+const COMBO_RECIPES = [
+  { goals: ["anxiety", "focus"],   psy: ["none", "micro"], pickIds: ["sp-goodday"], note: "CBG + CBD is the daytime-anxiety stack — calm without fog." },
+  { goals: ["anxiety"],            psy: ["none"],          pickIds: ["sp-passion"], note: "50mg CBD is the strongest non-psychoactive anxiety knockdown on the shelf." },
+  { goals: ["anxiety", "social"],  psy: ["mild"],          pickIds: ["sp-highspirits"], note: "CBG + low THC + THCv = social ease with clarity. Best for rehearsal-type situations." },
+  { goals: ["sleep"],              psy: ["none"],          pickIds: ["cb-cbd-sleep"], note: "CBD + sleep botanicals (no melatonin to interact with sertraline)." },
+  { goals: ["sleep", "anxiety"],   psy: ["none"],          pickIds: ["sp-goodnight"], note: "CBD + CBN — anxiety reduction that carries into deeper sleep." },
+  { goals: ["sleep"],              psy: ["mild", "full"],  pickIds: ["five-chill"],  note: "THC + CBD + CBN — the body fully lets go." },
+  { goals: ["pain"],               psy: ["none"],          pickIds: ["sp-passion"], note: "50mg CBD is your strongest anti-inflammatory non-psychoactive option." },
+  { goals: ["energy", "appetite"], psy: ["any", "mild"],   pickIds: ["sp-miracle"], note: "Pure THCv. Energy and appetite suppression, technically psychoactive but you barely feel it." },
+  { goals: ["focus"],              psy: ["micro"],         pickIds: ["sp-focused"], note: "2mg THC + Lion's Mane + L-Theanine — nootropic stack with sub-perceptual THC." },
 ];
 
 /* ─── COMPOUNDS ─── */
@@ -313,9 +366,9 @@ const PRODUCTS = [
     purpose: "Wellness & Recovery", icon: "\u{1F349}", color: "#dc2626",
     compounds: [
       { abbr: "CBD", mg: 25, role: "Primary" },
-      { abbr: "THC", mg: 2, role: "Trace" },
+      { abbr: "THC", mg: 1, role: "Trace" },
     ],
-    totalMg: 27, psychoactive: false, drugTestRisk: "Yes (trace THC)",
+    totalMg: 26, psychoactive: false, drugTestRisk: "Yes (trace THC)",
     price: { unit: null, pack: null, sub: null },
     fx: { euphoria: 0, relaxation: 4, focus: 1, energy: 0, social: 1, clarity: 2, sleep: 2, pain: 4, fog: 0, appetite: 0 },
     onset: "30-60 min", duration: "3-5 hrs",
@@ -330,9 +383,9 @@ const PRODUCTS = [
     purpose: "Wellness & Recovery", icon: "\u{1FAD0}", color: "#7e22ce",
     compounds: [
       { abbr: "CBD", mg: 25, role: "Primary" },
-      { abbr: "THC", mg: 2, role: "Trace" },
+      { abbr: "THC", mg: 1, role: "Trace" },
     ],
-    totalMg: 27, psychoactive: false, drugTestRisk: "Yes (trace THC)",
+    totalMg: 26, psychoactive: false, drugTestRisk: "Yes (trace THC)",
     price: { unit: null, pack: null, sub: null },
     fx: { euphoria: 0, relaxation: 4, focus: 1, energy: 0, social: 1, clarity: 2, sleep: 2, pain: 4, fog: 0, appetite: 0 },
     onset: "30-60 min", duration: "3-5 hrs",
@@ -347,9 +400,9 @@ const PRODUCTS = [
     purpose: "Wellness & Recovery", icon: "\u{1F351}", color: "#f97316",
     compounds: [
       { abbr: "CBD", mg: 25, role: "Primary" },
-      { abbr: "THC", mg: 2, role: "Trace" },
+      { abbr: "THC", mg: 1, role: "Trace" },
     ],
-    totalMg: 27, psychoactive: false, drugTestRisk: "Yes (trace THC)",
+    totalMg: 26, psychoactive: false, drugTestRisk: "Yes (trace THC)",
     price: { unit: null, pack: null, sub: null },
     fx: { euphoria: 0, relaxation: 4, focus: 1, energy: 0, social: 1, clarity: 2, sleep: 2, pain: 4, fog: 0, appetite: 0 },
     onset: "30-60 min", duration: "3-5 hrs",
@@ -363,8 +416,8 @@ const PRODUCTS = [
     id: "cb-cbd-sleep", brand: "Cornbread", name: "CBD Sleep Gummies", cat: "gummy",
     purpose: "Sleep (CBD-led)", icon: "\u{1F33F}", color: "#0d9488",
     compounds: [
-      { abbr: "CBD", mg: 50, role: "Primary" },
-      { abbr: "THC", mg: 2, role: "Trace" },
+      { abbr: "CBD", mg: 25, role: "Primary" },
+      { abbr: "THC", mg: 1, role: "Trace" },
       { abbr: "Valerian", mg: "?", role: "Botanical" },
       { abbr: "Chamomile", mg: "?", role: "Botanical" },
       { abbr: "Lavender", mg: "?", role: "Botanical" },
@@ -373,9 +426,9 @@ const PRODUCTS = [
     price: { unit: null, pack: null, sub: null },
     fx: { euphoria: 0, relaxation: 5, focus: 0, energy: 0, social: 0, clarity: 1, sleep: 4, pain: 3, fog: 1, appetite: 0 },
     onset: "30-60 min", duration: "4-6 hrs",
-    medFlag: "high",
-    medNote: "50mg CBD strongly inhibits CYP2B6 (bupropion) and CYP2C19 (sertraline) — top-tier interaction risk. Valerian adds sedation that stacks with sertraline. Bedtime only.",
-    coreyNote: "You haven't tried this. CBD-driven sleep formula with calming botanicals. The 50mg CBD load is the concern; consider half a gummy if you try it.",
+    medFlag: "medium",
+    medNote: "25mg CBD inhibits CYP2B6 (bupropion) and CYP2C19 (sertraline). Valerian adds sedation that stacks with sertraline. Bedtime only.",
+    coreyNote: "You haven't tried this. CBD-driven sleep formula with calming botanicals at a 25:1 CBD:THC ratio. Lower CBD load than I previously had recorded.",
     tags: ["CBD Sleep", "Botanicals", "Evening Only"],
     url_path_variant: "#sleep",
   },
@@ -711,13 +764,129 @@ const EDGE_ZONE = 24;
 const SWIPE_THRESHOLD = 0.35;
 const SPRING = "cubic-bezier(.32,.72,0,1)";
 
+function thcEquivOf(product) {
+  return (product.compounds || []).reduce((acc, c) => {
+    if (typeof c.mg !== "number") return acc;
+    if (c.abbr === "THC") return acc + c.mg;
+    if (c.abbr === "D8-THC") return acc + c.mg * 0.7;
+    if (c.abbr === "HHC") return acc + c.mg * 0.85;
+    return acc;
+  }, 0);
+}
+
+function passesPsyFilter(product, psyLevel) {
+  if (psyLevel === "any") return true;
+  if (psyLevel === "none") return !product.psychoactive;
+  const eq = thcEquivOf(product);
+  if (psyLevel === "micro") return eq <= 2;
+  if (psyLevel === "mild") return eq <= 5;
+  if (psyLevel === "full") return true;
+  return true;
+}
+
+function evaluateMedRisk(product, meds) {
+  if (!meds || !meds.length) return { level: "none", reasons: [] };
+  const compounds = product.compounds || [];
+  const cbdMg = compounds.find(c => c.abbr === "CBD")?.mg;
+  const cbd = typeof cbdMg === "number" ? cbdMg : 0;
+  const thcEq = thcEquivOf(product);
+  const has5HTP = compounds.some(c => c.abbr === "5-HTP");
+  const cbgMg = compounds.find(c => c.abbr === "CBG")?.mg;
+  const cbg = typeof cbgMg === "number" ? cbgMg : 0;
+  const hasMelatoninInProduct = compounds.some(c => c.abbr === "Melatonin");
+
+  const order = { none: 0, mild: 1, moderate: 2, severe: 3 };
+  let level = "none";
+  const reasons = [];
+  const bump = (lvl, reason) => {
+    if (order[lvl] > order[level]) level = lvl;
+    reasons.push(reason);
+  };
+
+  if (meds.includes("bupropion")) {
+    if (cbd >= 25) bump("severe", `${cbd}mg CBD strongly inhibits CYP2B6 — bupropion clearance reduced.`);
+    else if (cbd >= 10) bump("moderate", `${cbd}mg CBD moderately inhibits CYP2B6.`);
+  }
+  if (meds.includes("sertraline") || meds.includes("ssri_other")) {
+    if (has5HTP) bump("severe", "5-HTP raises serotonin — serotonin syndrome risk with SSRI/SNRI.");
+    if (cbd >= 25) bump("moderate", `${cbd}mg CBD inhibits CYP2C19 — sertraline clearance reduced.`);
+    else if (cbd >= 10) bump("mild", "CBD adds mild CYP2C19 load.");
+    if (thcEq >= 5) bump("mild", "THC adds minor serotonin overlap with SSRI.");
+  }
+  if (meds.includes("naproxen") && cbg >= 5) {
+    bump("mild", "CBG adds CYP2C9 load (the naproxen pathway).");
+  }
+  if (meds.includes("eliquis")) {
+    if (cbd >= 25 || thcEq >= 10) bump("severe", "CBD/THC inhibit CYP3A4 — Eliquis levels rise, bleeding risk increases.");
+    else if (cbd >= 5 || thcEq >= 5) bump("moderate", "Cannabinoids inhibit CYP3A4 — Eliquis interaction concern.");
+  }
+  if (meds.includes("focalin") && thcEq >= 5) {
+    bump("mild", "THC + stimulant: additive cardiovascular load.");
+  }
+  if (meds.includes("melatonin") && hasMelatoninInProduct) {
+    bump("moderate", "Product already contains melatonin — taking more would double-dose.");
+  }
+  return { level, reasons };
+}
+
+function scoreProductForGoals(product, goals) {
+  if (!goals.length) return 0;
+  let score = 0;
+  const fx = product.fx || {};
+  for (const goalId of goals) {
+    const goal = FINDER_GOALS.find(g => g.id === goalId);
+    if (!goal) continue;
+    for (const [k, w] of Object.entries(goal.fxBoost || {})) score += (fx[k] || 0) * w;
+    for (const [k, w] of Object.entries(goal.fxPenalty || {})) score -= (fx[k] || 0) * w;
+    if (goal.requireAppetiteNeg && (fx.appetite || 0) < 0) score += Math.abs(fx.appetite) * 2;
+  }
+  return score;
+}
+
+function detectSynergies(product) {
+  const abbrs = (product.compounds || []).map(x => x.abbr);
+  const has = (a) => abbrs.includes(a);
+  const tags = [];
+  if (has("CBD") && has("CBN")) tags.push("CBD+CBN");
+  if (has("CBD") && has("THC") && !has("CBN")) tags.push("CBD+THC");
+  if (has("CBD") && has("THCv")) tags.push("CBD+THCv");
+  if (has("CBG") && has("CBD")) tags.push("CBG+CBD");
+  if (has("CBN") && has("Melatonin")) tags.push("CBN+Melatonin");
+  if (has("THCv") && has("THC")) tags.push("THCv+THC");
+  if (has("Lion's Mane") && (has("THC") || has("THCv"))) tags.push("LionsMane+THC");
+  return tags;
+}
+
+const VALID_SECS = new Set(SECS.map(s => s.id));
+const readSecFromHash = () => {
+  if (typeof window === "undefined") return "home";
+  const h = window.location.hash.replace(/^#\/?/, "");
+  return VALID_SECS.has(h) ? h : "home";
+};
+
 export default function App() {
-  const [sec, setSec] = useState("home");
+  const [sec, setSec] = useState(readSecFromHash);
+  useEffect(() => {
+    const target = `#/${sec}`;
+    if (window.location.hash !== target) {
+      window.history.replaceState(null, "", target);
+    }
+  }, [sec]);
+  useEffect(() => {
+    const onHashChange = () => setSec(readSecFromHash());
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
   const [oc, setOc] = useState(null);
   const [oq, setOq] = useState(null);
   const [sel, setSel] = useState([]);
   const [q, setQ] = useState("");
-  const [nav, setNav] = useState(false);
+  const [nav, setNav] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const stored = localStorage.getItem("nav.open");
+    return stored === null ? false : stored === "true";
+  });
+  useEffect(() => { try { localStorage.setItem("nav.open", String(nav)); } catch {} }, [nav]);
   const [mob, setMob] = useState(typeof window!=="undefined"&&window.innerWidth<MOBILE_BP);
   const [swipeX, setSwipeX] = useState(null); // null = no active gesture, 0-1 = progress
   const [openId, setOpenId] = useState(null);
@@ -726,6 +895,24 @@ export default function App() {
   const [prodTab, setProdTab] = useState("gummies");
   const [cmpSlots, setCmpSlots] = useState([null, null, null]);
   const [cmpDoses, setCmpDoses] = useState([1, 1, 1]);
+  const [finderGoals, setFinderGoals] = useState(() => {
+    if (typeof window === "undefined") return [];
+    try { return JSON.parse(localStorage.getItem("finder.goals") || "[]"); } catch { return []; }
+  });
+  const [finderPsy, setFinderPsy] = useState(() => {
+    if (typeof window === "undefined") return "any";
+    return localStorage.getItem("finder.psy") || "any";
+  });
+  const [finderMeds, setFinderMeds] = useState(() => {
+    if (typeof window === "undefined") return ["bupropion", "sertraline"];
+    try {
+      const stored = localStorage.getItem("finder.meds");
+      return stored ? JSON.parse(stored) : ["bupropion", "sertraline"];
+    } catch { return ["bupropion", "sertraline"]; }
+  });
+  useEffect(() => { try { localStorage.setItem("finder.goals", JSON.stringify(finderGoals)); } catch {} }, [finderGoals]);
+  useEffect(() => { try { localStorage.setItem("finder.psy", finderPsy); } catch {} }, [finderPsy]);
+  useEffect(() => { try { localStorage.setItem("finder.meds", JSON.stringify(finderMeds)); } catch {} }, [finderMeds]);
   const ref = useRef(null);
 
   // Touch gesture refs (no re-renders during drag)
@@ -1024,6 +1211,210 @@ export default function App() {
         <div style={{display:"flex",gap:4}}>{p.c.map(id=>{const co=CMP.find(x=>x.id===id); return <span key={id} style={{...S.mono,color:co.col,fontWeight:700,fontSize:10}}>{co.ab}</span>;})}</div>
       </div>)}
     </>;
+
+    case "finder": return (() => {
+      const RISK_STYLE = {
+        none:     { bg: "#F0FDF4", border: "#BBF7D0", color: "#166534", label: "No conflicts" },
+        mild:     { bg: "#FEFCE8", border: "#FDE68A", color: "#854D0E", label: "Mild caution" },
+        moderate: { bg: "#FEF3C7", border: "#FCD34D", color: "#92400E", label: "Moderate risk" },
+        severe:   { bg: "#FEF2F2", border: "#FECACA", color: "#991B1B", label: "Severe — avoid" },
+      };
+      const evaluated = PRODUCTS.map(p => {
+        const psyOk = passesPsyFilter(p, finderPsy);
+        const risk = evaluateMedRisk(p, finderMeds);
+        const score = scoreProductForGoals(p, finderGoals);
+        return { p, psyOk, risk, score, synergies: detectSynergies(p) };
+      });
+      const eligible = evaluated.filter(e => e.psyOk && e.risk.level !== "severe");
+      const ranked = [...eligible].sort((a, b) => b.score - a.score);
+      const top = finderGoals.length ? ranked.filter(e => e.score > 0).slice(0, 5) : ranked.slice(0, 5);
+      const blocked = evaluated.filter(e => e.psyOk && e.risk.level === "severe");
+      const matchingRecipes = COMBO_RECIPES.filter(r =>
+        r.goals.every(g => finderGoals.includes(g)) &&
+        (r.psy.includes(finderPsy) || r.psy.includes("any")) &&
+        r.pickIds.every(id => {
+          const ev = evaluated.find(e => e.p.id === id);
+          return ev && ev.risk.level !== "severe";
+        })
+      ).slice(0, 3);
+
+      const toggle = (list, setList, id) =>
+        setList(list.includes(id) ? list.filter(x => x !== id) : [...list, id]);
+
+      return <>
+        <h1 style={{...S.h1,marginBottom:8}}>Finder</h1>
+        <p style={{...S.body,color:"#737373",marginBottom:20}}>Tell it what you want, what you take, and how high you want to get. It returns the products that fit and explains why.</p>
+
+        <Card>
+          <div style={{...S.mono,color:"#737373",marginBottom:12}}>What you want</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+            {FINDER_GOALS.map(g => {
+              const on = finderGoals.includes(g.id);
+              return <button key={g.id} onClick={() => toggle(finderGoals, setFinderGoals, g.id)} style={{
+                display:"flex",alignItems:"center",gap:6,padding:"7px 12px",borderRadius:10,
+                border:`1.5px solid ${on?"#18181b":"#e8e8e8"}`,background:on?"#18181b":"#fff",
+                color:on?"#fff":"#525252",cursor:"pointer",fontFamily:G,fontSize:12,fontWeight:600,transition:"all .15s",
+              }}>
+                <span>{g.icon}</span><span>{g.label}</span>
+              </button>;
+            })}
+          </div>
+        </Card>
+
+        <Card>
+          <div style={{...S.mono,color:"#737373",marginBottom:12}}>How psychoactive</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+            {PSY_LEVELS.map(l => {
+              const on = finderPsy === l.id;
+              return <button key={l.id} onClick={() => setFinderPsy(l.id)} style={{
+                padding:"7px 12px",borderRadius:10,border:`1.5px solid ${on?"#18181b":"#e8e8e8"}`,
+                background:on?"#18181b":"#fff",color:on?"#fff":"#525252",cursor:"pointer",
+                fontFamily:G,fontSize:12,fontWeight:600,textAlign:"left",
+              }}>
+                <div>{l.label}</div>
+                <div style={{fontSize:10,opacity:.7,marginTop:2}}>{l.desc}</div>
+              </button>;
+            })}
+          </div>
+        </Card>
+
+        <Card>
+          <div style={{...S.mono,color:"#737373",marginBottom:12}}>Medications you take</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+            {FINDER_MEDS.map(m => {
+              const on = finderMeds.includes(m.id);
+              return <button key={m.id} onClick={() => toggle(finderMeds, setFinderMeds, m.id)} style={{
+                padding:"6px 11px",borderRadius:10,border:`1.5px solid ${on?"#9F1239":"#e8e8e8"}`,
+                background:on?"#FEF2F2":"#fff",color:on?"#9F1239":"#525252",cursor:"pointer",
+                fontFamily:G,fontSize:11,fontWeight:600,
+              }}>
+                {m.label}
+              </button>;
+            })}
+          </div>
+          <div style={{...S.body,fontSize:11,color:"#737373",marginTop:10}}>Saved on this device. Severe-conflict products are hidden from results — see them at the bottom if you want.</div>
+        </Card>
+
+        {!finderGoals.length && (
+          <Card s={{background:"#FAFAFA",border:"1px dashed #d4d4d8"}}>
+            <div style={{...S.body,fontSize:13,color:"#525252"}}>Pick at least one goal above to see ranked matches.</div>
+          </Card>
+        )}
+
+        {finderGoals.length > 0 && top.length === 0 && (
+          <Card s={{background:"#FEF3C7",border:"1px solid #FCD34D"}}>
+            <div style={{fontFamily:G,fontSize:14,fontWeight:700,color:"#92400E",marginBottom:6}}>No clean match.</div>
+            <div style={{...S.body,fontSize:12,color:"#92400E"}}>Either nothing in stock fits these goals + medications, or your psychoactive setting is excluding the products that would. Try widening the psychoactive setting or removing one goal.</div>
+          </Card>
+        )}
+
+        {top.length > 0 && (
+          <>
+            <div style={{...S.mono,color:"#737373",margin:"18px 0 8px"}}>Best matches</div>
+            {top.map((e, i) => {
+              const rs = RISK_STYLE[e.risk.level];
+              return (
+                <Card key={e.p.id} s={{padding:16}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+                    <span style={{fontSize:22}}>{e.p.icon}</span>
+                    <div style={{flex:1}}>
+                      <div style={{fontFamily:GM,fontSize:9,color:"#737373",textTransform:"uppercase",letterSpacing:.5}}>{e.p.brand}</div>
+                      <div style={{fontFamily:G,fontSize:15,fontWeight:700,color:"#161616"}}>{e.p.name}</div>
+                      <div style={{fontFamily:GM,fontSize:11,color:e.p.color,fontWeight:600}}>{e.p.purpose}</div>
+                    </div>
+                    <div style={{textAlign:"right"}}>
+                      <div style={{fontFamily:GM,fontSize:9,color:"#737373",textTransform:"uppercase"}}>Match</div>
+                      <div style={{fontFamily:GM,fontSize:18,fontWeight:700,color:"#16a34a"}}>{e.score}</div>
+                    </div>
+                  </div>
+                  <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>
+                    {e.p.compounds.map((c, j) => (
+                      <Pill key={j} bg="#f4f4f5" c="#3f3f46">{c.abbr}{typeof c.mg === "number" ? ` ${c.mg}mg` : ""}</Pill>
+                    ))}
+                  </div>
+                  <div style={{
+                    background: rs.bg, border: `1px solid ${rs.border}`, borderRadius: 8,
+                    padding: 10, marginBottom: 10,
+                  }}>
+                    <div style={{fontFamily:GM,fontSize:9,color:rs.color,textTransform:"uppercase",fontWeight:700,marginBottom:4}}>
+                      💊 {rs.label}
+                    </div>
+                    {e.risk.reasons.length > 0 ? (
+                      <ul style={{margin:0,paddingLeft:16}}>
+                        {e.risk.reasons.map((r, j) => (
+                          <li key={j} style={{fontSize:12,lineHeight:1.5,color:"#414141"}}>{r}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div style={{fontSize:12,lineHeight:1.5,color:"#414141"}}>No flagged interactions with your selected medications.</div>
+                    )}
+                  </div>
+                  {e.synergies.length > 0 && (
+                    <div style={{background:"#F5F3FF",border:"1px solid #DDD6FE",borderRadius:8,padding:10}}>
+                      <div style={{fontFamily:GM,fontSize:9,color:"#6D28D9",textTransform:"uppercase",fontWeight:700,marginBottom:6}}>
+                        Why this combo works
+                      </div>
+                      {e.synergies.map(tag => (
+                        <div key={tag} style={{marginBottom:6}}>
+                          <div style={{fontFamily:GM,fontSize:10,fontWeight:700,color:"#5B21B6"}}>{SYNERGIES[tag].label}</div>
+                          <div style={{fontSize:12,lineHeight:1.5,color:"#414141"}}>{SYNERGIES[tag].why}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Card>
+              );
+            })}
+          </>
+        )}
+
+        {matchingRecipes.length > 0 && (
+          <>
+            <div style={{...S.mono,color:"#737373",margin:"18px 0 8px"}}>Recommended for your situation</div>
+            {matchingRecipes.map((r, i) => {
+              const picks = r.pickIds.map(id => evaluated.find(e => e.p.id === id)).filter(Boolean);
+              return (
+                <Card key={i} s={{background:"#FAFAFA",borderLeft:"3px solid #18181b"}}>
+                  <div style={{...S.body,fontSize:13,color:"#414141",marginBottom:10}}>{r.note}</div>
+                  {picks.map(pk => (
+                    <div key={pk.p.id} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0"}}>
+                      <span style={{fontSize:18}}>{pk.p.icon}</span>
+                      <div style={{flex:1}}>
+                        <div style={{fontFamily:G,fontSize:13,fontWeight:600,color:"#161616"}}>{pk.p.name}</div>
+                        <div style={{fontFamily:GM,fontSize:10,color:"#737373"}}>{pk.p.brand}</div>
+                      </div>
+                      <MedBadge level={pk.p.medFlag} />
+                    </div>
+                  ))}
+                </Card>
+              );
+            })}
+          </>
+        )}
+
+        {blocked.length > 0 && (
+          <>
+            <div style={{...S.mono,color:"#737373",margin:"18px 0 8px"}}>Hidden — severe medication conflict</div>
+            {blocked.map(e => (
+              <Card key={e.p.id} s={{padding:14,background:"#FEF2F2",border:"1px solid #FECACA"}}>
+                <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
+                  <span style={{fontSize:18,opacity:.6}}>{e.p.icon}</span>
+                  <div style={{flex:1}}>
+                    <div style={{fontFamily:G,fontSize:13,fontWeight:700,color:"#991B1B"}}>{e.p.name}</div>
+                    <div style={{fontFamily:GM,fontSize:10,color:"#9F1239"}}>{e.p.brand}</div>
+                  </div>
+                </div>
+                <ul style={{margin:0,paddingLeft:16}}>
+                  {e.risk.reasons.map((r, j) => (
+                    <li key={j} style={{fontSize:11,lineHeight:1.5,color:"#7F1D1D"}}>{r}</li>
+                  ))}
+                </ul>
+              </Card>
+            ))}
+          </>
+        )}
+      </>;
+    })();
 
     case "products": return <>
       <h1 style={{...S.h1,marginBottom:8}}>Products</h1>
@@ -1402,6 +1793,21 @@ export default function App() {
       button:active { transform: scale(0.97) !important; }
       select { transition: border-color 200ms ease; -webkit-tap-highlight-color: transparent; }
       select:focus { border-color: #161616 !important; outline: none; }
+      @keyframes sec-enter {
+        0%   { opacity: 0; transform: translate3d(0, 8px, 0); filter: blur(4px); }
+        60%  { opacity: 1; filter: blur(0); }
+        100% { opacity: 1; transform: translate3d(0, 0, 0); filter: blur(0); }
+      }
+      .sec-stage { animation: sec-enter 360ms cubic-bezier(.22, 1, .36, 1) both; }
+      .sec-stage > * { animation: sec-enter 460ms cubic-bezier(.22, 1, .36, 1) both; }
+      .sec-stage > *:nth-child(1) { animation-delay: 40ms; }
+      .sec-stage > *:nth-child(2) { animation-delay: 90ms; }
+      .sec-stage > *:nth-child(3) { animation-delay: 140ms; }
+      .sec-stage > *:nth-child(4) { animation-delay: 180ms; }
+      .sec-stage > *:nth-child(n+5) { animation-delay: 220ms; }
+      @media (prefers-reduced-motion: reduce) {
+        .sec-stage, .sec-stage > * { animation: none !important; }
+      }
     `}</style>
 
     {/* Top bar */}
@@ -1456,7 +1862,7 @@ export default function App() {
           borderRadius:sideProgress > 0 ? 12 : 0,
           overflow:"hidden",
         }}>
-          <div ref={ref} style={{flex:1,maxWidth:960,width:"100%",padding:"0.5rem 1.5rem 5rem",overflowY:"auto"}}>{R()}</div>
+          <div ref={ref} style={{flex:1,maxWidth:960,width:"100%",padding:"0.5rem 1.5rem 5rem",overflowY:"auto"}}><div key={sec} className="sec-stage">{R()}</div></div>
         </div>
       </> : <>
         {/* ── DESKTOP: push sidebar ── */}
@@ -1464,7 +1870,7 @@ export default function App() {
           {sidebarContent}
         </div>
         <div style={{flex:1,minWidth:0,display:"flex",justifyContent:"center"}}>
-          <div ref={ref} style={{flex:1,maxWidth:960,width:"100%",padding:"0.5rem 1.5rem 5rem",overflowY:"auto"}}>{R()}</div>
+          <div ref={ref} style={{flex:1,maxWidth:960,width:"100%",padding:"0.5rem 1.5rem 5rem",overflowY:"auto"}}><div key={sec} className="sec-stage">{R()}</div></div>
         </div>
       </>}
     </div>
