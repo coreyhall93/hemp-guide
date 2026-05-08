@@ -881,7 +881,12 @@ export default function App() {
   const [oq, setOq] = useState(null);
   const [sel, setSel] = useState([]);
   const [q, setQ] = useState("");
-  const [nav, setNav] = useState(false);
+  const [nav, setNav] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const stored = localStorage.getItem("nav.open");
+    return stored === null ? false : stored === "true";
+  });
+  useEffect(() => { try { localStorage.setItem("nav.open", String(nav)); } catch {} }, [nav]);
   const [mob, setMob] = useState(typeof window!=="undefined"&&window.innerWidth<MOBILE_BP);
   const [swipeX, setSwipeX] = useState(null); // null = no active gesture, 0-1 = progress
   const [openId, setOpenId] = useState(null);
@@ -1788,6 +1793,21 @@ export default function App() {
       button:active { transform: scale(0.97) !important; }
       select { transition: border-color 200ms ease; -webkit-tap-highlight-color: transparent; }
       select:focus { border-color: #161616 !important; outline: none; }
+      @keyframes sec-enter {
+        0%   { opacity: 0; transform: translate3d(0, 8px, 0); filter: blur(4px); }
+        60%  { opacity: 1; filter: blur(0); }
+        100% { opacity: 1; transform: translate3d(0, 0, 0); filter: blur(0); }
+      }
+      .sec-stage { animation: sec-enter 360ms cubic-bezier(.22, 1, .36, 1) both; }
+      .sec-stage > * { animation: sec-enter 460ms cubic-bezier(.22, 1, .36, 1) both; }
+      .sec-stage > *:nth-child(1) { animation-delay: 40ms; }
+      .sec-stage > *:nth-child(2) { animation-delay: 90ms; }
+      .sec-stage > *:nth-child(3) { animation-delay: 140ms; }
+      .sec-stage > *:nth-child(4) { animation-delay: 180ms; }
+      .sec-stage > *:nth-child(n+5) { animation-delay: 220ms; }
+      @media (prefers-reduced-motion: reduce) {
+        .sec-stage, .sec-stage > * { animation: none !important; }
+      }
     `}</style>
 
     {/* Top bar */}
@@ -1842,7 +1862,7 @@ export default function App() {
           borderRadius:sideProgress > 0 ? 12 : 0,
           overflow:"hidden",
         }}>
-          <div ref={ref} style={{flex:1,maxWidth:960,width:"100%",padding:"0.5rem 1.5rem 5rem",overflowY:"auto"}}>{R()}</div>
+          <div ref={ref} style={{flex:1,maxWidth:960,width:"100%",padding:"0.5rem 1.5rem 5rem",overflowY:"auto"}}><div key={sec} className="sec-stage">{R()}</div></div>
         </div>
       </> : <>
         {/* ── DESKTOP: push sidebar ── */}
@@ -1850,7 +1870,7 @@ export default function App() {
           {sidebarContent}
         </div>
         <div style={{flex:1,minWidth:0,display:"flex",justifyContent:"center"}}>
-          <div ref={ref} style={{flex:1,maxWidth:960,width:"100%",padding:"0.5rem 1.5rem 5rem",overflowY:"auto"}}>{R()}</div>
+          <div ref={ref} style={{flex:1,maxWidth:960,width:"100%",padding:"0.5rem 1.5rem 5rem",overflowY:"auto"}}><div key={sec} className="sec-stage">{R()}</div></div>
         </div>
       </>}
     </div>
