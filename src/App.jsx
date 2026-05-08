@@ -711,8 +711,26 @@ const EDGE_ZONE = 24;
 const SWIPE_THRESHOLD = 0.35;
 const SPRING = "cubic-bezier(.32,.72,0,1)";
 
+const VALID_SECS = new Set(SECS.map(s => s.id));
+const readSecFromHash = () => {
+  if (typeof window === "undefined") return "home";
+  const h = window.location.hash.replace(/^#\/?/, "");
+  return VALID_SECS.has(h) ? h : "home";
+};
+
 export default function App() {
-  const [sec, setSec] = useState("home");
+  const [sec, setSec] = useState(readSecFromHash);
+  useEffect(() => {
+    const target = `#/${sec}`;
+    if (window.location.hash !== target) {
+      window.history.replaceState(null, "", target);
+    }
+  }, [sec]);
+  useEffect(() => {
+    const onHashChange = () => setSec(readSecFromHash());
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
   const [oc, setOc] = useState(null);
   const [oq, setOq] = useState(null);
   const [sel, setSel] = useState([]);
